@@ -6,7 +6,7 @@ fi
 
 # avoid stack overflow as in our simple demo the bootstrapping replica will
 # potentially have a long chain of promise resolution
-ulimit -s unlimited
+#ulimit -s unlimited
 
 for i in "${rep[@]}"; do
     echo "starting replica $i"

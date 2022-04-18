@@ -18,6 +18,26 @@ project(hotstuff)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/salticidae/cmake/Modules/")
+set(OPENSSL_ROOT_DIR /usr/local/Cellar/openssl@1.1/1.1.1n)
+set(Libuv_DIR /usr/local/Cellar/libuv/1.44.1/)
+#set(Libuv_DIR /usr/local/Cellar/libuv/1.44.1/)
+
+include_directories(
+        #        salticidae/
+        #        salticidae/include/
+        #        salticidae/include/salticidae
+        /usr/local/Cellar/libuv/1.44.1/include
+        /usr/local/Cellar/openssl@1.1/1.1.1n/include
+        /usr/local/include/
+        /usr/local/Cellar/libsecp256k1/0.1/include
+)
+#find_package(OpenSSL 1.1.0 REQUIRED)
+link_libraries(ssl)
+link_libraries(crypto)
+link_directories(/usr/local/lib)
+link_directories(/usr/local/include/salticidae)
+link_directories(/usr/local/Cellar/libuv/1.44.1/lib)
+link_directories(/usr/local/Cellar/openssl@1.1/1.1.1n/lib)
 
 add_subdirectory(salticidae)
 include_directories(salticidae/include)
