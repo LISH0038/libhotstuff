@@ -105,7 +105,7 @@ bool HotStuffBase::on_deliver_blk(const block_t &blk) {
         assert(storage->is_blk_delivered(p));
     if ((valid = HotStuffCore::on_deliver_blk(blk)))
     {
-        LOG_DEBUG("block %.10s delivered",
+        LOG_INFO("block %.10s delivered",
                 get_hex(blk_hash).c_str());
         part_parent_size += blk->get_parent_hashes().size();
         part_delivered++;
@@ -203,16 +203,28 @@ void HotStuffBase::propose_handler(MsgPropose &&msg, const Net::conn_t &conn) {
     const PeerId &peer = conn->get_peer_id();
     if (peer.is_null()) return;
     msg.postponed_parse(this);
+    LOG_INFO("Received proposal: '%s' (%lu bytes)\n",
+             std::string(msg.proposal).c_str(), std::string(msg.proposal).length());
     auto &prop = msg.proposal;
     block_t blk = prop.blk;
     if (!blk) return;
-    if (peer != get_config().get_peer_id(prop.proposer))
-    {
-        LOG_WARN("invalid proposal from %d", prop.proposer);
-        return;
+//    if (peer != get_config().get_peer_id(prop.proposer))
+//    {
+//        LOG_WARN("invalid proposal from %d", prop.proposer);
+//        return;
+//    }
+
+    // relay msg to children
+    if (prop.proposer != get_id() && childlist.empty()) {
+        childlist = get_child(id);
     }
+
+    for (const auto& tid : childlist) {
+        send_propose(prop, tid);
+    }
+
     promise::all(std::vector<promise_t>{
-        async_deliver_blk(blk->get_hash(), peer)
+        async_deliver_blk(blk->get_hash(), get_config().get_peer_id(prop.proposer))
     }).then([this, prop = std::move(prop)]() {
         on_receive_proposal(prop);
     });
@@ -222,6 +234,8 @@ void HotStuffBase::vote_handler(MsgVote &&msg, const Net::conn_t &conn) {
     const auto &peer = conn->get_peer_id();
     if (peer.is_null()) return;
     msg.postponed_parse(this);
+    LOG_INFO("Received vote: '%s' (%lu bytes)\n",
+             std::string(msg.vote).c_str(), std::string(msg.vote).length());
     //auto &vote = msg.vote;
     RcObj<Vote> v(new Vote(std::move(msg.vote)));
     promise::all(std::vector<promise_t>{
@@ -268,6 +282,135 @@ bool HotStuffBase::conn_handler(const salticidae::ConnPool::conn_t &conn, bool c
         return valid_tls_certs.count(salticidae::get_hash(cert->get_der()));
     }
     return true;
+}
+
+void HotStuffBase::on_chunk(MsgChunk &&msg, const Net::conn_t &conn)
+{
+    PeerId pid = conn->get_peer_id();
+    DataStream recv;
+    if (recvqueue.find(pid) != recvqueue.end()) {
+        recv = recvqueue[pid];
+    } else {
+        recvqueue[pid] = recv;
+    }
+    if (msg.eom) {
+//        LOG_INFO("Received complete: '%s' (%lu bytes)",
+//                 std::string(recv).c_str(), std::string(recv).length());
+        propose_handler(MsgPropose(recv), conn);
+        recv.clear();
+        recvqueue[pid] = recv;
+        return;
+    }
+
+    recv << bytearray_t(msg.serialized);
+    recvqueue[pid] = recv;
+}
+
+void HotStuffBase::on_clock(int) {
+    double delay;
+    size_t size;
+
+    if (id == 0 && sndqueue.empty()) {
+        int tid = childlist[send_index++];
+//        LOG_INFO("[0] send to child: %d", childlist[send_index]);
+        if (send_index < peers.size()) {
+//            LOG_INFO("[%s] enqueue backup msg to %d", get_id(), tid);
+            send_propose(curProp, tid);
+        } else {
+            // finish backup check
+            send_index = 0;
+        }
+    } else if (sndqueue.empty())
+        return;
+
+    if (!sndqueue.empty()) {
+        auto pair = sndqueue.front();
+        sndqueue.pop_front();
+        size = pair.first.serialized.size();
+
+//        LOG_INFO(" [%d] send chunk of %lu bytes to [%d] \n", get_id(), size, pair.second);
+        pn.send_msg(std::move(pair.first), peers[pair.second]);
+    }
+
+    delay = ((double) size) / MaxRate;
+
+    clock.del();
+    clock.add(delay);
+}
+
+void HotStuffBase::send_propose(Proposal &prop, int tid)
+{
+    size_t done, size, len;
+    const char *ptr;
+    bool empty;
+
+    DataStream s;
+    s << prop.proposer
+      << *prop.blk;
+    size = s.size();
+
+//    size = str.size();
+//    ptr = str.data();
+    empty = sndqueue.empty();
+
+    for (done = 0; done < size; done += ChunkSize) {
+        len = ChunkSize;
+        if ((done + len) > size)
+            len = size - done;
+        const char *ptr = (const char *)
+                s.get_data_inplace(len);
+        bytearray_t data = bytearray_t(ptr, ptr+len);
+//        LOG_INFO("enqueue chunk of %lu bytes (%lu/%lu)\n", len,
+//               done + len, size);
+        sndqueue.push_back(std::make_pair(MsgChunk(data),
+                                     tid));
+    }
+    sndqueue.push_back(std::make_pair(MsgChunk(nullptr, 0), tid));
+
+    if (!empty || sndqueue.empty())
+        return;
+
+    on_clock(0);
+}
+
+std::vector<int> HotStuffBase::get_child(int id) {
+    int base =1;
+    int tmp = id;
+    while (id!=0 && id%2 ==0){
+        id >>=1;
+        base <<=1;
+//        std::cout<<id<<std::endl;
+    }
+    std::vector<int> children;
+    while(base >>=1) {
+//        LOG_INFO("add child: %d", tmp+base-1);
+        children.push_back(tmp + base-1);
+    }
+    return children;
+}
+
+std::vector<int> HotStuffBase::get_leader_child(int n) {
+    std::vector<int> children;
+//    LOG_INFO("n: %d", n);
+    int base =1;
+    while(base < n+1) base <<=1;
+    int bitmask = base >>2;
+    while(base >>=1) {
+        children.push_back(base);
+    }
+    std::vector<int> subchild{bitmask,0};
+    while(bitmask >>=1) {
+        std::vector<int>::size_type size = subchild.size();
+        for (int i=0; i<size; i++) {
+            int v = subchild[i];
+            subchild.push_back(v | bitmask);
+            children.push_back(v | bitmask);
+        }
+    }
+    for (int i = 0; i < children.size(); ++i) {
+        children[i] --;
+    }
+    return children;
 }
 
 void HotStuffBase::print_stat() const {
@@ -360,7 +503,9 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
         part_delivery_time_max(0)
 {
     /* register the handlers for msg from replicas */
-    pn.reg_handler(salticidae::generic_bind(&HotStuffBase::propose_handler, this, _1, _2));
+//    pn.reg_handler(salticidae::generic_bind(&HotStuffBase::propose_handler, this, _1, _2));
+    clock = salticidae::TimerEvent(ec, salticidae::generic_bind(&HotStuffBase::on_clock, this, _1));
+    pn.reg_handler(salticidae::generic_bind(&HotStuffBase::on_chunk, this, _1, _2));
     pn.reg_handler(salticidae::generic_bind(&HotStuffBase::vote_handler, this, _1, _2));
     pn.reg_handler(salticidae::generic_bind(&HotStuffBase::req_blk_handler, this, _1, _2));
     pn.reg_handler(salticidae::generic_bind(&HotStuffBase::resp_blk_handler, this, _1, _2));
@@ -376,11 +521,24 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
     pn.listen(listen_addr);
 }
 
-void HotStuffBase::do_broadcast_proposal(const Proposal &prop) {
+void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
     //MsgPropose prop_msg(prop);
-    pn.multicast_msg(MsgPropose(prop), peers);
+//    pn.multicast_msg(MsgPropose(prop), peers);
     //for (const auto &replica: peers)
     //    pn.send_msg(prop_msg, replica);
+    send_index = 0;
+    curProp = prop;
+    childlist = get_leader_child(peers.size());
+//    for (auto&v:childlist) {
+//        LOG_INFO("%d,", v);
+//    }
+    int tid = childlist[send_index++];
+//    if (peerIdMap.find(tid) != peerIdMap.end()) {
+//        const auto &peerId = peerIdMap[tid];
+//        LOG_INFO("[%hu] send to %d", get_id(), tid);
+//        LOG_INFO("proposal:[%s]", std::string(prop).c_str());
+        send_propose(prop, tid);
+//    }
 }
 
 void HotStuffBase::do_vote(ReplicaID last_proposer, const Vote &vote) {
@@ -465,6 +623,7 @@ void HotStuffBase::start(
                 }
                 pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
                     if (proposer == get_id())
+//                        LOG_INFO("[%hu] send", get_id());
                         on_propose(cmds, pmaker->get_parents());
                 });
                 return true;

@@ -119,7 +119,7 @@ class HotStuffCore {
     /** Called by HotStuffCore upon broadcasting a new proposal.
      * The user should send the proposal message to all replicas except for
      * itself. */
-    virtual void do_broadcast_proposal(const Proposal &prop) = 0;
+    virtual void do_broadcast_proposal(Proposal &prop) = 0;
     /** Called upon sending out a new vote to the next proposer.  The user
      * should send the vote message to a *good* proposer to have good liveness,
      * while safety is always guaranteed by HotStuffCore. */
