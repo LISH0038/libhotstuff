@@ -179,7 +179,7 @@ class HotStuffBase: public HotStuffCore {
     std::list<std::pair<MsgChunk, int>> sndqueue;
     std::map<PeerId, DataStream> recvqueue;
     std::vector<int> childlist;
-    size_t MaxRate = 10000;
+    size_t MaxRate = 100000;
     size_t ChunkSize = 100;
     int send_index = 0;
     Proposal curProp;
