@@ -17,7 +17,7 @@
 
 #ifndef _HOTSTUFF_CORE_H
 #define _HOTSTUFF_CORE_H
-
+#include <map>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
@@ -43,8 +43,10 @@ struct MsgPropose {
     static const opcode_t opcode = 0x0;
     DataStream serialized;
     Proposal proposal;
+    MsgPropose();
     MsgPropose(const Proposal &);
     /** Only move the data to serialized, do not parse immediately. */
+    MsgPropose(DataStream s): serialized(std::move(s)) {}
     MsgPropose(DataStream &&s): serialized(std::move(s)) {}
     /** Parse the serialized data to blks now, with `hsc->storage`. */
     void postponed_parse(HotStuffCore *hsc);
@@ -77,6 +79,35 @@ struct MsgRespBlock {
     MsgRespBlock(DataStream &&s): serialized(std::move(s)) {}
     void postponed_parse(HotStuffCore *hsc);
 };
+
+struct MsgChunk {
+    static const uint8_t opcode = 0xff;
+
+    DataStream serialized;
+    DataStream content;
+    bool eom;
+
+    MsgChunk(bytearray_t &data)
+    {
+        serialized << data;
+    }
+
+    MsgChunk(const char *buf, size_t len)
+    {
+        serialized << std::string(buf, len);
+    }
+
+    MsgChunk(DataStream &&s)
+    {
+        size_t len  = s.size();
+//        const char *ptr = (const char *)
+//                s.get_data_inplace(len);
+//        content = DataStream(ptr, len);
+        serialized = s;
+        eom = (len == 0);
+    }
+};
+
 
 using promise::promise_t;
 
@@ -144,6 +175,15 @@ class HotStuffBase: public HotStuffCore {
     VeriPool vpool;
     std::vector<PeerId> peers;
 
+    TimerEvent clock;
+    std::list<std::pair<MsgChunk, int>> sndqueue;
+    std::map<PeerId, DataStream> recvqueue;
+    std::vector<int> childlist;
+    size_t MaxRate = 10000;
+    size_t ChunkSize = 100;
+    int send_index = 0;
+    Proposal curProp;
+
     private:
     /** whether libevent handle is owned by itself */
     bool ec_loop;
@@ -193,11 +233,15 @@ class HotStuffBase: public HotStuffCore {
 
     inline bool conn_handler(const salticidae::ConnPool::conn_t &, bool);
 
-    void do_broadcast_proposal(const Proposal &) override;
+    void do_broadcast_proposal(Proposal &) override;
     void do_vote(ReplicaID, const Vote &) override;
     void do_decide(Finality &&) override;
     void do_consensus(const block_t &blk) override;
-
+    void on_chunk(MsgChunk &&msg, const Net::conn_t &conn);
+    void on_clock(int);
+    void send_propose(Proposal &prop, int tid);
+    std::vector<int> get_child(int id);
+    std::vector<int> get_leader_child(int n);
     protected:
 
     /** Called to replicate the execution of a command, the application should
