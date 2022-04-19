@@ -310,7 +310,7 @@ void HotStuffBase::on_clock(int) {
     double delay;
     size_t size;
 
-    if (id == 0 && sndqueue.empty()) {
+    if (id == 0 && sndqueue.empty() && blk_delivery_waiting.size() > 0) {
         int tid = childlist[send_index++];
 //        LOG_INFO("[0] send to child: %d", childlist[send_index]);
         if (send_index < peers.size()) {
