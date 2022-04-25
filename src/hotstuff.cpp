@@ -310,6 +310,10 @@ void HotStuffBase::on_clock(int) {
     double delay;
     size_t size;
 
+    /*
+     * This block checks whether the leader needs to move on to send to the next child,
+     * if yes, schedule the sending.
+     */
     if (id == 0 && sndqueue.empty() && blk_delivery_waiting.size() > 0) {
         int tid = childlist[send_index++];
 //        LOG_INFO("[0] send to child: %d", childlist[send_index]);
@@ -328,7 +332,7 @@ void HotStuffBase::on_clock(int) {
         sndqueue.pop_front();
         size = pair.first.serialized.size();
 
-//        LOG_INFO(" [%d] send chunk of %lu bytes to [%d] \n", get_id(), size, pair.second);
+        LOG_INFO(" [%d] send chunk of %lu bytes to [%d] \n", get_id(), size, pair.second);
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
 
@@ -379,7 +383,6 @@ std::vector<int> HotStuffBase::get_child(int id) {
     while (id!=0 && id%2 ==0){
         id >>=1;
         base <<=1;
-//        std::cout<<id<<std::endl;
     }
     std::vector<int> children;
     while(base >>=1) {
@@ -391,23 +394,34 @@ std::vector<int> HotStuffBase::get_child(int id) {
 
 std::vector<int> HotStuffBase::get_leader_child(int n) {
     std::vector<int> children;
-//    LOG_INFO("n: %d", n);
+    LOG_INFO("n: %d", n);
     int base =1;
-    while(base < n+1) base <<=1;
-    int bitmask = base >>2;
+    while(base < n) base <<=1;
+    int bitmask = base >>1;
     while(base >>=1) {
+        // leader's direct child
         children.push_back(base);
     }
+    if (n == bitmask * 2)
+        // edge case - n is power of 2, add n as the leader's last child (leader has one more round that others)
+        children.push_back(n);
+
     std::vector<int> subchild{bitmask,0};
     while(bitmask >>=1) {
+        // adding child in i+1 th height
         std::vector<int>::size_type size = subchild.size();
         for (int i=0; i<size; i++) {
-            int v = subchild[i];
-            subchild.push_back(v | bitmask);
-            children.push_back(v | bitmask);
+            int v = subchild[i] | bitmask;
+            subchild.push_back(v);
+            if (std::find(children.begin(),children.end(),v) == children.end() && v <= n) {
+                children.push_back(v);
+            }
         }
     }
+
+    // convert node number to index starting from 0
     for (int i = 0; i < children.size(); ++i) {
+        LOG_INFO("child: %d", children[i]);
         children[i] --;
     }
     return children;
