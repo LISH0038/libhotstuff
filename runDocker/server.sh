@@ -41,7 +41,7 @@ do
   ((i++))
 done
 
-sleep 20
+#sleep 20
 
 # Store all services in the list of IPs (first internal nodes then the leaf nodes)
 dig A $service +short | sort -u | sed -e 's/$/ 1/' >> ips
@@ -49,7 +49,7 @@ dig A $service +short | sort -u | sed -e 's/$/ 1/' >> ips
 sleep 5
 
 # Generate the HotStuff config file based on the given parameters
-python3 scripts/gen_conf.py
+python3 scripts/gen_conf.py --ips "ips"
 
 sleep 20
 
@@ -58,19 +58,19 @@ echo "Starting Application: #${i}"
 # Startup Kauri
 gdb -ex r -ex bt -ex q --args ./examples/hotstuff-app --conf ./hotstuff.gen-sec${id}.conf > log${id} 2>&1 &
 
-sleep 40
+sleep 20
 
 #Configure Network restrictions
 sudo tc qdisc add dev eth0 root netem delay ${latency}ms limit 400000 rate ${bandwidth}mbit &
 
-sleep 25
+sleep 5
 
 # Start Client on Host Machine
 if [ ${id} == 0 ]; then
   gdb -ex r -ex bt -ex q --args ./examples/hotstuff-client --idx ${id} --iter -900 --max-async 900 > clientlog0 2>&1 &
 fi
 
-sleep 300
+sleep 30
 
 killall hotstuff-client &
 killall hotstuff-app &
