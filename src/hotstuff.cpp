@@ -237,15 +237,20 @@ void HotStuffBase::vote_handler(MsgVote &&msg, const Net::conn_t &conn) {
     LOG_INFO("Received vote: '%s' (%lu bytes)\n",
              std::string(msg.vote).c_str(), std::string(msg.vote).length());
     //auto &vote = msg.vote;
+
     RcObj<Vote> v(new Vote(std::move(msg.vote)));
+//    blk_ack_set[v->blk_hash].insert(peer);
+//    LOG_INFO("blk_ack_set size [%d]", blk_ack_set[v->blk_hash].size());
+
     promise::all(std::vector<promise_t>{
         async_deliver_blk(v->blk_hash, peer),
         v->verify(vpool),
     }).then([this, v=std::move(v)](const promise::values_t values) {
         if (!promise::any_cast<bool>(values[1]))
             LOG_WARN("invalid vote from %d", v->voter);
-        else
+        else {
             on_receive_vote(*v);
+        }
     });
 }
 
@@ -314,25 +319,23 @@ void HotStuffBase::on_clock(int) {
      * This block checks whether the leader needs to move on to send to the next child,
      * if yes, schedule the sending.
      */
-    if (id == 0 && sndqueue.empty() && blk_delivery_waiting.size() > 0) {
+//    LOG_INFO("Here, send_index = [%d]", send_index);
+    if (id == pmaker->get_proposer() && sndqueue.empty() && send_index < peers.size()) {
+//        LOG_INFO("Here2, send_index = [%d]", send_index);
         int tid = childlist[send_index++];
-//        LOG_INFO("[0] send to child: %d", childlist[send_index]);
-        if (send_index < peers.size()) {
-//            LOG_INFO("[%s] enqueue backup msg to %d", get_id(), tid);
-            send_propose(curProp, tid);
-        } else {
-            // finish backup check
-            send_index = 0;
-        }
-    } else if (sndqueue.empty())
+//        LOG_INFO("[0] send to child: %d", tid);
+//        LOG_INFO("[%s] enqueue backup msg to %d", get_id(), tid);
+        send_propose(curProp, tid);
+    }
+
+    if (sndqueue.empty())
         return;
 
     if (!sndqueue.empty()) {
         auto pair = sndqueue.front();
         sndqueue.pop_front();
         size = pair.first.serialized.size();
-
-        LOG_INFO(" [%d] send chunk of %lu bytes to [%d] \n", get_id(), size, pair.second);
+//        LOG_INFO(" [%d] send chunk of %lu bytes to [%d] \n", get_id(), size, pair.second);
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
 
@@ -394,7 +397,7 @@ std::vector<int> HotStuffBase::get_child(int id) {
 
 std::vector<int> HotStuffBase::get_leader_child(int n) {
     std::vector<int> children;
-    LOG_INFO("n: %d", n);
+//    LOG_INFO("n: %d", n);
     int base =1;
     while(base < n) base <<=1;
     int bitmask = base >>1;
@@ -421,7 +424,7 @@ std::vector<int> HotStuffBase::get_leader_child(int n) {
 
     // convert node number to index starting from 0
     for (int i = 0; i < children.size(); ++i) {
-        LOG_INFO("child: %d", children[i]);
+//        LOG_INFO("child: %d", children[i]);
         children[i] --;
     }
     return children;
@@ -536,10 +539,7 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
 }
 
 void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
-    //MsgPropose prop_msg(prop);
-//    pn.multicast_msg(MsgPropose(prop), peers);
-    //for (const auto &replica: peers)
-    //    pn.send_msg(prop_msg, replica);
+//    LOG_INFO("do_broadcast_proposal");
     send_index = 0;
     curProp = prop;
     childlist = get_leader_child(peers.size());
@@ -547,12 +547,7 @@ void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
 //        LOG_INFO("%d,", v);
 //    }
     int tid = childlist[send_index++];
-//    if (peerIdMap.find(tid) != peerIdMap.end()) {
-//        const auto &peerId = peerIdMap[tid];
-//        LOG_INFO("[%hu] send to %d", get_id(), tid);
-//        LOG_INFO("proposal:[%s]", std::string(prop).c_str());
-        send_propose(prop, tid);
-//    }
+    send_propose(prop, tid);
 }
 
 void HotStuffBase::do_vote(ReplicaID last_proposer, const Vote &vote) {
