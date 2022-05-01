@@ -49,6 +49,7 @@ if __name__ == "__main__":
     #     i = port_count.setdefault(ip, 0)
     #     port_count[ip] += 1
     #     replicas.append("{}:{};{}".format(ip, base_pport + i, base_cport + i))
+    i = 0
     for ip in ips:
         replicas.append("{}:{};{}".format(ip, base_pport + i, base_cport + i))
         i+=1
