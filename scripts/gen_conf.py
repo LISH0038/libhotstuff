@@ -26,7 +26,14 @@ if __name__ == "__main__":
     if args.ips is None:
         ips = ['127.0.0.1']
     else:
-        ips = [l.strip() for l in open(args.ips, 'r').readlines()]
+        ipSet = [l.strip() for l in open(args.ips, 'r').readlines()]
+        ips = []
+        for ipEl in ipSet:
+            ipElSet = ipEl.split(" ")
+            print(ipElSet)
+            for x in range(int(ipElSet[1])):
+                ips.append(ipElSet[0])
+
     prefix = args.prefix
     iter = args.iter
     base_pport = args.pport
@@ -38,16 +45,32 @@ if __name__ == "__main__":
     nodes = open(args.nodes, 'w')
     port_count = {}
     replicas = []
+    # for ip in ips:
+    #     i = port_count.setdefault(ip, 0)
+    #     port_count[ip] += 1
+    #     replicas.append("{}:{};{}".format(ip, base_pport + i, base_cport + i))
+    i = 0
     for ip in ips:
-        i = port_count.setdefault(ip, 0)
-        port_count[ip] += 1
         replicas.append("{}:{};{}".format(ip, base_pport + i, base_cport + i))
-    p = subprocess.Popen([keygen_bin, '--num', str(len(replicas))],
-                        stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
+        i+=1
+
+    p = subprocess.Popen([keygen_bin, '--num', str(len(replicas)), '--algo', "secp256k1"],
+                         stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
     keys = [[t[4:] for t in l.decode('ascii').split()] for l in p.stdout]
-    tls_p = subprocess.Popen([tls_keygen_bin, '--num', str(len(replicas))],
-                        stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
+    # tls_p = subprocess.Popen([tls_keygen_bin, '--num', str(len(replicas))],
+    #                     stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
+    # tls_keys = [[t[4:] for t in l.decode('ascii').split()] for l in tls_p.stdout]
+
+    tls_p = subprocess.Popen([tls_keygen_bin, '--num', str(len(replicas))], stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
     tls_keys = [[t[4:] for t in l.decode('ascii').split()] for l in tls_p.stdout]
+
+    f = open("tlskeys.txt", "w")
+    for k in tls_keys:
+       f.write(k[0] + " " + k[1] + " " + k[2] + "\n")
+    f.close()
+
+    tls_keys2 = [[n for n in line.strip().split(' ')] for line in open("tlskeys.txt", 'r').readlines()]
+
     if args.block_size is not None:
         main_conf.write("block-size = {}\n".format(args.block_size))
     if args.nworker is not None:
@@ -62,7 +85,7 @@ if __name__ == "__main__":
         main_conf.write("cliburst = {}\n".format(args.cliburst))
     if not (args.pace_maker is None):
         main_conf.write("pace-maker = {}\n".format(args.pace_maker))
-    for r in zip(replicas, keys, tls_keys, itertools.count(0)):
+    for r in zip(replicas, keys, tls_keys2[:len(keys)], itertools.count(0)):
         main_conf.write("replica = {}, {}, {}\n".format(r[0], r[1][0], r[2][2]))
         r_conf_name = "{}-sec{}.conf".format(prefix, r[3])
         nodes.write("{}:{}\t{}\n".format(r[3], r[0], r_conf_name))

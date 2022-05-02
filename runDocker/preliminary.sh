@@ -1,12 +1,12 @@
 sudo apt-get update
-#sudo apt-get install docker.io libssl-dev libuv1-dev cmake make software-properties-common ansible g++ autoconf libtool
+#sudo apt-get -y install docker.io libssl-dev libuv1-dev cmake make software-properties-common ansible g++ autoconf libtool gdb
 #sudo add-apt-repository --yes --update ppa:ansible/ansible
 sudo apt-get -y install docker.io
 #Kauri
-git clone https://github.com/Raycoms/Kauri-Public.git
-cd Kauri-Public/runkauri
+git clone https://github.com/LISH0038/libhotstuff.git
+cd libhotstuff/runkauri
 sudo docker build -t kauri .
-"sudo apt-get update;sudo apt-get -y install docker.io; git clone https://github.com/Raycoms/Kauri-Public.git;cd Kauri-Public/runkauri;sudo docker build -t kauri ."
+"sudo apt-get update;sudo apt-get -y install docker.io; git clone https://github.com/LISH0038/libhotstuff.git; cd libhotstuff/runDocker;sudo docker build -t kauri ."
 sudo docker swarm init
 sudo docker network create --driver=overlay --subnet=10.1.0.0/16 kauri_network
 #cd ..
