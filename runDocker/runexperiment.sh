@@ -18,6 +18,9 @@ do
   echo $LINE
   IFS=':' read -ra split <<< "$LINE"
 
+  echo "{split[0]}:${split[0]}"
+  echo "${split[1]}"
+
   sed  "s/${ORIGINAL_STRING}/${split[0]}/g" $FILENAME > $EXPORT_FILENAME
   sed  -i "s/${QTY1_STRING}/${split[1]}/g" $EXPORT_FILENAME
 
