@@ -145,7 +145,7 @@ std::pair<std::string, std::string> split_ip_port_cport(const std::string &s) {
 salticidae::BoxObj<HotStuffApp> papp = nullptr;
 
 int main(int argc, char **argv) {
-    Config config("hotstuff.conf");
+    Config config("hotstuff.gen.conf");
 
     ElapsedTime elapsed;
     elapsed.start();
@@ -215,7 +215,6 @@ int main(int argc, char **argv) {
             throw HotStuffError("invalid replica info");
         replicas.push_back(std::make_tuple(res[0], res[1], res[2]));
     }
-
     if (!(0 <= idx && (size_t)idx < replicas.size()))
         throw HotStuffError("replica idx out of range");
     std::string binding_addr = std::get<0>(replicas[idx]);
@@ -245,6 +244,8 @@ int main(int argc, char **argv) {
     clinet_config.max_msg_size(opt_max_cli_msg->get());
     if (!opt_tls_privkey->get().empty() && !opt_notls->get())
     {
+        HOTSTUFF_LOG_INFO("opt_tls_privkey->get():%v", opt_tls_privkey->get());
+        HOTSTUFF_LOG_INFO("opt_tls_cert->get():%v", opt_tls_cert->get());
         auto tls_priv_key = new salticidae::PKey(
                 salticidae::PKey::create_privkey_from_der(
                     hotstuff::from_hex(opt_tls_privkey->get())));
@@ -262,6 +263,7 @@ int main(int argc, char **argv) {
     clinet_config
         .burst_size(opt_cliburst->get())
         .nworker(opt_clinworker->get());
+    HOTSTUFF_LOG_INFO("opt_privkey->get():%v", opt_privkey->get());
     papp = new HotStuffApp(opt_blk_size->get(),
                         opt_stat_period->get(),
                         opt_imp_timeout->get(),
@@ -277,6 +279,8 @@ int main(int argc, char **argv) {
     std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> reps;
     for (auto &r: replicas)
     {
+        HOTSTUFF_LOG_INFO("here");
+        HOTSTUFF_LOG_INFO("std::get<1>(r):%v", std::get<1>(r));
         auto p = split_ip_port_cport(std::get<0>(r));
         reps.push_back(std::make_tuple(
             NetAddr(p.first),
