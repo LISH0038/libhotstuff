@@ -596,7 +596,7 @@ void HotStuffBase::start(
         HotStuffCore::add_replica(i, peer, std::move(std::get<1>(replicas[i])));
         if (addr != listen_addr)
         {
-            LOG_INFO("push peerId = [%d] \n", peer);
+            LOG_INFO("push peerId = [%d] \n", *peer);
             peers.push_back(peer);
             pn.add_peer(peer);
             pn.set_peer_addr(peer, addr);
