@@ -16,12 +16,12 @@ service="server-$KAURI_UUID"
 
 # Make sure correct branch is selected for crypto
 cd libhotstuff && git pull && git submodule update --recursive --remote
-git checkout master
+git checkout debug
 
 # Do a quick compile of the branch
 git pull && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED=ON -DHOTSTUFF_PROTO_LOG=ON && make
 
-sleep 30
+#sleep 30
 
 id=0
 i=0
@@ -53,7 +53,7 @@ sleep 5
 # Generate the HotStuff config file based on the given parameters
 python3 scripts/gen_conf.py --ips "ips"
 
-sleep 20
+#sleep 20
 
 echo "Starting Application: #${i}"
 
