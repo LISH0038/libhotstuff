@@ -335,7 +335,8 @@ void HotStuffBase::on_clock(int) {
         auto pair = sndqueue.front();
         sndqueue.pop_front();
         size = pair.first.serialized.size();
-//        LOG_INFO(" [%d] send chunk of %lu bytes to [%d] \n", get_id(), size, pair.second);
+        LOG_INFO(" [%d] send chunk of %lu bytes to [%d] \n", get_id(), size, pair.second);
+        LOG_INFO("  peerId = [%d] \n", peers[pair.second]);
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
 
@@ -367,8 +368,8 @@ void HotStuffBase::send_propose(Proposal &prop, int tid)
         const char *ptr = (const char *)
                 s.get_data_inplace(len);
         bytearray_t data = bytearray_t(ptr, ptr+len);
-//        LOG_INFO("enqueue chunk of %lu bytes (%lu/%lu)\n", len,
-//               done + len, size);
+        LOG_INFO("enqueue chunk of %lu bytes (%lu/%lu)\n", len,
+               done + len, size);
         sndqueue.push_back(std::make_pair(MsgChunk(data),
                                      tid));
     }
@@ -632,7 +633,7 @@ void HotStuffBase::start(
                 }
                 pmaker->beat().then([this, cmds = std::move(cmds)](ReplicaID proposer) {
                     if (proposer == get_id())
-//                        LOG_INFO("[%hu] send", get_id());
+                        LOG_INFO("[%hu] send", get_id());
                         on_propose(cmds, pmaker->get_parents());
                 });
                 return true;
