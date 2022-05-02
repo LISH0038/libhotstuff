@@ -585,6 +585,7 @@ void HotStuffBase::start(
         std::vector<std::tuple<NetAddr, pubkey_bt, uint256_t>> &&replicas,
         bool ec_loop) {
 
+    LOG_INFO("HotStuffBase::start");
     for (size_t i = 0; i < replicas.size(); i++)
     {
         auto &addr = std::get<0>(replicas[i]);
@@ -594,6 +595,10 @@ void HotStuffBase::start(
         HotStuffCore::add_replica(i, peer, std::move(std::get<1>(replicas[i])));
         if (addr != listen_addr)
         {
+            DataStream s;
+            s << peer;
+
+            LOG_INFO("known_peers:%s", std::string(s).c_str());
             peers.push_back(peer);
             pn.add_peer(peer);
             pn.set_peer_addr(peer, addr);
