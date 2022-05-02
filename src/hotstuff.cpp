@@ -596,13 +596,13 @@ void HotStuffBase::start(
         HotStuffCore::add_replica(i, peer, std::move(std::get<1>(replicas[i])));
         if (addr != listen_addr)
         {
+            LOG_INFO("push peerId = [%d] \n", peer);
             peers.push_back(peer);
             pn.add_peer(peer);
             pn.set_peer_addr(peer, addr);
             pn.conn_peer(peer);
         }
     }
-    LOG_INFO("HotStuffBase::start here2");
 
     /* ((n - 1) + 1 - 1) / 3 */
     uint32_t nfaulty = peers.size() / 3;
@@ -612,7 +612,6 @@ void HotStuffBase::start(
     pmaker->init(this);
     if (ec_loop)
         ec.dispatch();
-    LOG_INFO("HotStuffBase::start here3");
 
     cmd_pending.reg_handler(ec, [this](cmd_queue_t &q) {
         std::pair<uint256_t, commit_cb_t> e;
