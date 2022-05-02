@@ -602,6 +602,7 @@ void HotStuffBase::start(
             pn.conn_peer(peer);
         }
     }
+    LOG_INFO("HotStuffBase::start here2");
 
     /* ((n - 1) + 1 - 1) / 3 */
     uint32_t nfaulty = peers.size() / 3;
@@ -611,6 +612,7 @@ void HotStuffBase::start(
     pmaker->init(this);
     if (ec_loop)
         ec.dispatch();
+    LOG_INFO("HotStuffBase::start here3");
 
     cmd_pending.reg_handler(ec, [this](cmd_queue_t &q) {
         std::pair<uint256_t, commit_cb_t> e;
