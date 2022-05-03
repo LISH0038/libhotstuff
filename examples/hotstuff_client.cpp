@@ -67,8 +67,10 @@ std::vector<std::pair<struct timeval, double>> elapsed;
 std::unique_ptr<Net> mn;
 
 void connect_all() {
-    for (size_t i = 0; i < replicas.size(); i++)
+    for (size_t i = 0; i < replicas.size(); i++) {
+        HOTSTUFF_LOG_INFO ("replica %d addr:%s", i, std::string(replicas[i]).c_str());
         conns.insert(std::make_pair(i, mn->connect_sync(replicas[i])));
+    }
 }
 
 bool try_send(bool check = true) {

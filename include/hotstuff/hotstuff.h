@@ -180,7 +180,7 @@ class HotStuffBase: public HotStuffCore {
     std::map<PeerId, DataStream> recvqueue;
     std::vector<int> childlist;
     size_t MaxRate = 100000;
-    size_t ChunkSize = 100;
+    size_t ChunkSize = 1000;
     int send_index = 0;
     Proposal curProp;
 
@@ -241,8 +241,8 @@ class HotStuffBase: public HotStuffCore {
     void on_chunk(MsgChunk &&msg, const Net::conn_t &conn);
     void on_clock(int);
     void send_propose(Proposal &prop, int tid);
-    std::vector<int> get_child(int id);
-    std::vector<int> get_leader_child(int n);
+    std::vector<int> get_child(int n, int id, int proposer);
+    std::vector<int> get_leader_child(int n, int id);
     protected:
 
     /** Called to replicate the execution of a command, the application should
