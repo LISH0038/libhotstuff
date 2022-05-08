@@ -333,7 +333,7 @@ void HotStuffBase::on_clock(int) {
         auto pair = sndqueue.front();
         sndqueue.pop_front();
         size = pair.first.serialized.size();
-        LOG_INFO(" [%d] send chunk of %lu bytes to [%d]", get_id(), size, pair.second);
+//        LOG_INFO(" [%d] send chunk of %lu bytes to [%d]", get_id(), size, pair.second);
 //        LOG_INFO("  peerId = [%d] \n", peers[pair.second]);
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
@@ -366,8 +366,8 @@ void HotStuffBase::send_propose(Proposal &prop, int tid)
         const char *ptr = (const char *)
                 s.get_data_inplace(len);
         bytearray_t data = bytearray_t(ptr, ptr+len);
-        LOG_INFO("enqueue chunk of %lu bytes (%lu/%lu)", len,
-               done + len, size);
+//        LOG_INFO("enqueue chunk of %lu bytes (%lu/%lu)", len,
+//               done + len, size);
         sndqueue.push_back(std::make_pair(MsgChunk(data),
                                      tid));
     }
@@ -473,18 +473,21 @@ void HotStuffBase::print_stat() const {
     size_t _nrecv = 0;
     for (const auto &replica: peers)
     {
-        auto conn = pn.get_peer_conn(replica);
-        if (conn == nullptr) continue;
-        size_t ns = conn->get_nsent();
-        size_t nr = conn->get_nrecv();
-        size_t nsb = conn->get_nsentb();
-        size_t nrb = conn->get_nrecvb();
-        conn->clear_msgstat();
-        LOG_INFO("%s: %u(%u), %u(%u), %u",
-            get_hex10(replica).c_str(), ns, nsb, nr, nrb, part_fetched_replica[replica]);
-        _nsent += ns;
-        _nrecv += nr;
-        part_fetched_replica[replica] = 0;
+        try {
+            auto conn = pn.get_peer_conn(replica);
+            if (conn == nullptr) continue;
+            size_t ns = conn->get_nsent();
+            size_t nr = conn->get_nrecv();
+            size_t nsb = conn->get_nsentb();
+            size_t nrb = conn->get_nrecvb();
+            conn->clear_msgstat();
+            LOG_INFO("%s: %u(%u), %u(%u), %u",
+                     get_hex10(replica).c_str(), ns, nsb, nr, nrb, part_fetched_replica[replica]);
+            _nsent += ns;
+            _nrecv += nr;
+            part_fetched_replica[replica] = 0;
+        } catch (...) {}
+
     }
     nsent += _nsent;
     nrecv += _nrecv;
