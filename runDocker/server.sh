@@ -51,7 +51,7 @@ dig A $service +short | sort -u | sed -e 's/$/ 1/' >> ips
 sleep 5
 
 # Generate the HotStuff config file based on the given parameters
-python3 scripts/gen_conf.py --ips "ips"
+python3 scripts/gen_conf.py --ips "ips" --block-size $blocksize --repburst 10 --cliburst 10
 
 sleep 20
 
