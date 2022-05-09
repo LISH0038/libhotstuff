@@ -51,7 +51,7 @@ dig A $service +short | sort -u | sed -e 's/$/ 1/' >> ips
 sleep 5
 
 # Generate the HotStuff config file based on the given parameters
-python3 scripts/gen_conf.py --ips "ips" --block-size $blocksize --repburst 10 --cliburst 10
+python3 scripts/gen_conf.py --ips "ips" --block-size $blocksize
 
 sleep 20
 
@@ -69,7 +69,7 @@ sleep 5
 
 # Start Client on Host Machine
 if [ ${id} == 0 ]; then
-  gdb -ex r -ex bt -ex q --args ./examples/hotstuff-client --idx ${id} --iter -900 --max-async 900 > clientlog0 2>&1 &
+  gdb -ex r -ex bt -ex q --args ./examples/hotstuff-client --idx ${id} --iter -1000 --max-async 1000 > clientlog0 2>&1 &
 fi
 
 sleep 30
