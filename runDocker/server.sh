@@ -46,7 +46,7 @@ done
 #sleep 20
 
 # Store all services in the list of IPs (first internal nodes then the leaf nodes)
-#dig A $service +short | sort -u | sed -e 's/$/ 1/' >> ips
+dig A $service +short | sort -u | sed -e 's/$/ 1/' >> ips
 
 sleep 5
 
