@@ -17,7 +17,6 @@
 #include <error.h>
 #include "salticidae/util.h"
 #include "hotstuff/crypto.h"
-#include <iostream>
 
 using salticidae::Config;
 using hotstuff::privkey_bt;
@@ -25,7 +24,6 @@ using hotstuff::pubkey_bt;
 
 int main(int argc, char **argv) {
     srand(5);
-    std::cout << "srand(5)" << std::endl;
     Config config("hotstuff.gen.conf");
     privkey_bt priv_key;
     auto opt_n = Config::OptValInt::create(1);
