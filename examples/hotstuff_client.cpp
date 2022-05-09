@@ -17,7 +17,6 @@
 
 #include <cassert>
 #include <random>
-#include <memory>
 #include <signal.h>
 #include <sys/time.h>
 
@@ -64,21 +63,20 @@ std::unordered_map<ReplicaID, Net::conn_t> conns;
 std::unordered_map<const uint256_t, Request> waiting;
 std::vector<NetAddr> replicas;
 std::vector<std::pair<struct timeval, double>> elapsed;
-std::unique_ptr<Net> mn;
+Net mn(ec, Net::Config());
 
 void connect_all() {
-    for (size_t i = 0; i < replicas.size(); i++) {
-        HOTSTUFF_LOG_INFO ("replica %d addr:%s", i, std::string(replicas[i]).c_str());
-        conns.insert(std::make_pair(i, mn->connect_sync(replicas[i])));
-    }
+    conns.insert(std::make_pair(0, mn.connect_sync(replicas[0])));
 }
 
 bool try_send(bool check = true) {
-    if ((!check || waiting.size() < max_async_num) && max_iter_num)
+    if ((!check || waiting.size() < max_async_num ) && max_iter_num)
     {
         auto cmd = new CommandDummy(cid, cnt++);
         MsgReqCmd msg(*cmd);
-        for (auto &p: conns) mn->send_msg(msg, p.second);
+        for (auto &p: conns)
+            mn.send_msg(msg, p.second);
+
 #ifndef HOTSTUFF_ENABLE_BENCHMARK
         HOTSTUFF_LOG_INFO("send new cmd %.10s",
                             get_hex(cmd->get_hash()).c_str());
@@ -87,7 +85,7 @@ bool try_send(bool check = true) {
             cmd->get_hash(), Request(cmd)));
         if (max_iter_num > 0)
             max_iter_num--;
-        return true;
+        return false;
     }
     return false;
 }
@@ -100,7 +98,6 @@ void client_resp_cmd_handler(MsgRespCmd &&msg, const Net::conn_t &) {
     auto &et = it->second.et;
     if (it == waiting.end()) return;
     et.stop();
-    if (++it->second.confirmed <= nfaulty) return; // wait for f + 1 ack
 #ifndef HOTSTUFF_ENABLE_BENCHMARK
     HOTSTUFF_LOG_INFO("got %s, wall: %.3f, cpu: %.3f",
                         std::string(fin).c_str(),
@@ -110,6 +107,7 @@ void client_resp_cmd_handler(MsgRespCmd &&msg, const Net::conn_t &) {
     gettimeofday(&tv, nullptr);
     elapsed.push_back(std::make_pair(tv, et.elapsed_sec));
 #endif
+    usleep(75);
     waiting.erase(it);
     while (try_send());
 }
@@ -127,7 +125,6 @@ int main(int argc, char **argv) {
     auto opt_max_iter_num = Config::OptValInt::create(100);
     auto opt_max_async_num = Config::OptValInt::create(10);
     auto opt_cid = Config::OptValInt::create(-1);
-    auto opt_max_cli_msg = Config::OptValInt::create(65536); // 64K by default
 
     auto shutdown = [&](int) { ec.stop(); };
     salticidae::SigEvent ev_sigint(ec, shutdown);
@@ -135,16 +132,14 @@ int main(int argc, char **argv) {
     ev_sigint.add(SIGINT);
     ev_sigterm.add(SIGTERM);
 
-    mn = std::make_unique<Net>(ec, Net::Config().max_msg_size(opt_max_cli_msg->get()));
-    mn->reg_handler(client_resp_cmd_handler);
-    mn->start();
+    mn.reg_handler(client_resp_cmd_handler);
+    mn.start();
 
     config.add_opt("idx", opt_idx, Config::SET_VAL);
     config.add_opt("cid", opt_cid, Config::SET_VAL);
     config.add_opt("replica", opt_replicas, Config::APPEND);
     config.add_opt("iter", opt_max_iter_num, Config::SET_VAL);
     config.add_opt("max-async", opt_max_async_num, Config::SET_VAL);
-    config.add_opt("max-cli-msg", opt_max_cli_msg, Config::SET_VAL, 'S', "the maximum client message size");
     config.parse(argc, argv);
     auto idx = opt_idx->get();
     max_iter_num = opt_max_iter_num->get();
