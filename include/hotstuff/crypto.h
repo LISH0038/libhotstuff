@@ -61,7 +61,7 @@ namespace hotstuff {
     class QuorumCert: public Serializable, public Cloneable {
     public:
         virtual ~QuorumCert() = default;
-        virtual void add_part(const ReplicaConfig &config, ReplicaID replica, const PartCert &pc) = 0;
+        virtual void add_part(ReplicaID replica, const PartCert &pc) = 0;
         virtual void merge_quorum(const QuorumCert &qc) = 0;
         virtual bool has_n(uint32_t n) = 0;
         virtual void compute() = 0;
@@ -194,7 +194,7 @@ namespace hotstuff {
             return new QuorumCertDummy(*this);
         }
 
-        void add_part(const ReplicaConfig &config, ReplicaID, const PartCert &) override
+        void add_part(ReplicaID, const PartCert &) override
         {
             qty++;
         }
@@ -487,7 +487,7 @@ namespace hotstuff {
         QuorumCertSecp256k1() = default;
         QuorumCertSecp256k1(const ReplicaConfig &config, const uint256_t &obj_hash);
 
-        void add_part(const ReplicaConfig &config, ReplicaID rid, const PartCert &pc) override {
+        void add_part(ReplicaID rid, const PartCert &pc) override {
             if (pc.get_obj_hash() != obj_hash)
                 throw std::invalid_argument("PartCert does match the block hash");
             sigs.insert(std::make_pair(
@@ -984,7 +984,7 @@ namespace hotstuff {
             }
         }
 
-        void add_part(const ReplicaConfig &config, ReplicaID rid, const PartCert &pc) override {
+        void add_part(ReplicaID rid, const PartCert &pc) override {
             if (pc.get_obj_hash() != obj_hash)
                 throw std::invalid_argument("PartCert does match the block hash");
             rids.set(rid);
