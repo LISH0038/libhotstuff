@@ -65,10 +65,10 @@ if __name__ == "__main__":
     tls_p = subprocess.Popen([tls_keygen_bin, '--num', str(len(replicas))], stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
     tls_keys = [[t[4:] for t in l.decode('ascii').split()] for l in tls_p.stdout]
 
-    # f = open("tlskeys.txt", "w")
-    # for k in tls_keys:
-    #    f.write(k[0] + " " + k[1] + " " + k[2] + "\n")
-    # f.close()
+    f = open("tlskeys.txt", "w")
+    for k in tls_keys:
+       f.write(k[0] + " " + k[1] + " " + k[2] + "\n")
+    f.close()
 
     tls_keys2 = [[n for n in line.strip().split(' ')] for line in open("tlskeys.txt", 'r').readlines()]
 
@@ -86,6 +86,9 @@ if __name__ == "__main__":
         main_conf.write("cliburst = {}\n".format(args.cliburst))
     if not (args.pace_maker is None):
         main_conf.write("pace-maker = {}\n".format(args.pace_maker))
+    print(len(replicas))
+    print(len(keys))
+    print(len(tls_keys2))
     for r in zip(replicas, keys, tls_keys2[:len(keys)], itertools.count(0)):
         main_conf.write("replica = {}, {}, {}\n".format(r[0], r[1][0], r[2][2]))
         r_conf_name = "{}-sec{}.conf".format(prefix, r[3])
