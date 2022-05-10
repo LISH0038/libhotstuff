@@ -65,12 +65,12 @@ if __name__ == "__main__":
     tls_p = subprocess.Popen([tls_keygen_bin, '--num', str(len(replicas))], stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
     tls_keys = [[t[4:] for t in l.decode('ascii').split()] for l in tls_p.stdout]
 
-    # f = open("tlskeys.txt", "w")
-    # for k in tls_keys:
-    #    f.write(k[0] + " " + k[1] + " " + k[2] + "\n")
-    # f.close()
-    #
-    # tls_keys2 = [[n for n in line.strip().split(' ')] for line in open("tlskeys.txt", 'r').readlines()]
+    f = open("tlskeys.txt", "w")
+    for k in tls_keys:
+       f.write(k[0] + " " + k[1] + " " + k[2] + "\n")
+    f.close()
+
+    tls_keys2 = [[n for n in line.strip().split(' ')] for line in open("tlskeys.txt", 'r').readlines()]
 
     if args.block_size is not None:
         main_conf.write("block-size = {}\n".format(args.block_size))
