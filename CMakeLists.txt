@@ -42,6 +42,26 @@ set_target_properties(
     ${CMAKE_CURRENT_SOURCE_DIR}/secp256k1/.libs/libsecp256k1.a)
 add_dependencies(secp256k1 libsecp256k1)
 
+add_subdirectory(bls/src)
+
+include(FetchContent)
+
+FetchContent_Declare(
+        relic
+        GIT_REPOSITORY https://github.com/relic-toolkit/relic.git
+        GIT_TAG        ed485dccb23f9f5615eac5c71b3e37bd1bc8fb3e
+)
+FetchContent_MakeAvailable(relic)
+
+include_directories(
+        ${INCLUDE_DIRECTORIES}
+        salticidae/include
+        ${relic_SOURCE_DIR}/include
+        ${relic_BINARY_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
+        ${GMP_INCLUDES}
+)
+
 # add libraries
 
 include_directories(./)
@@ -91,11 +111,11 @@ endif()
 # build tools
 add_executable(hotstuff-keygen
     src/hotstuff_keygen.cpp)
-target_link_libraries(hotstuff-keygen hotstuff_static)
+target_link_libraries(hotstuff-keygen hotstuff_static blstmp relic_s relic_s pthread sodium)
 
 add_executable(hotstuff-tls-keygen
     src/hotstuff_tls_keygen.cpp)
-target_link_libraries(hotstuff-tls-keygen hotstuff_static)
+target_link_libraries(hotstuff-tls-keygen hotstuff_static blstmp relic_s pthread sodium)
 
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
