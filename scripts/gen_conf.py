@@ -14,6 +14,7 @@ if __name__ == "__main__":
     parser.add_argument('--tls-keygen', type=str, default='./hotstuff-tls-keygen')
     parser.add_argument('--nodes', type=str, default='nodes.txt')
     parser.add_argument('--block-size', type=int, default=1)
+    parser.add_argument('--crypto', type=str, default='bls')
     parser.add_argument('--pace-maker', type=str, default='dummy')
     parser.add_argument('--nworker', type=int, default=4)
     parser.add_argument('--repnworker', type=int, default=4)
@@ -54,7 +55,7 @@ if __name__ == "__main__":
         replicas.append("{}:{};{}".format(ip, base_pport + i, base_cport + i))
         i+=1
 
-    p = subprocess.Popen([keygen_bin, '--num', str(len(replicas))],
+    p = subprocess.Popen([keygen_bin, '--num', str(len(replicas)),'--algo', args.crypto],
                          stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
     keys = [[t[4:] for t in l.decode('ascii').split()] for l in p.stdout]
     # tls_p = subprocess.Popen([tls_keygen_bin, '--num', str(len(replicas))],

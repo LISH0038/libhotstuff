@@ -24,16 +24,19 @@ using hotstuff::pubkey_bt;
 
 int main(int argc, char **argv) {
     srand(5);
+
     Config config("hotstuff.gen.conf");
     privkey_bt priv_key;
     auto opt_n = Config::OptValInt::create(1);
-    auto opt_algo = Config::OptValStr::create("secp256k1");
+    auto opt_algo = Config::OptValStr::create("bls");
     config.add_opt("num", opt_n, Config::SET_VAL);
     config.add_opt("algo", opt_algo, Config::SET_VAL);
     config.parse(argc, argv);
     auto &algo = opt_algo->get();
     if (algo == "secp256k1")
         priv_key = new hotstuff::PrivKeySecp256k1();
+    else if (algo == "bls")
+        priv_key = new hotstuff::PrivKeyBLS();
     else
         error(1, 0, "algo not supported");
     int n = opt_n->get();
@@ -44,7 +47,7 @@ int main(int argc, char **argv) {
         priv_key->from_rand();
         pubkey_bt pub_key = priv_key->get_pubkey();
         printf("pub:%s sec:%s\n", get_hex(*pub_key).c_str(),
-                            get_hex(*priv_key).c_str());
+               get_hex(*priv_key).c_str());
     }
     return 0;
 }

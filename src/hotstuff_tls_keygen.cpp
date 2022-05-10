@@ -38,9 +38,9 @@ int main(int argc, char **argv) {
         priv_key = new salticidae::PKey(salticidae::PKey::create_privkey_rsa());
         pub_key = new salticidae::X509(salticidae::X509::create_self_signed_from_pubkey(*priv_key));
         printf("crt:%s sec:%s cid:%s\n",
-                salticidae::get_hex(pub_key->get_der()).c_str(),
-                salticidae::get_hex(priv_key->get_privkey_der()).c_str(),
-                salticidae::get_hex(salticidae::get_hash(pub_key->get_der())).c_str());
+               salticidae::get_hex(pub_key->get_der()).c_str(),
+               salticidae::get_hex(priv_key->get_privkey_der()).c_str(),
+               salticidae::get_hex(salticidae::get_hash(pub_key->get_der())).c_str());
     }
     return 0;
 }
