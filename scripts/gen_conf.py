@@ -69,7 +69,7 @@ if __name__ == "__main__":
     #    f.write(k[0] + " " + k[1] + " " + k[2] + "\n")
     # f.close()
     #
-    # tls_keys2 = [[n for n in line.strip().split(' ')] for line in open("tlskeys.txt", 'r').readlines()]
+    tls_keys2 = [[n for n in line.strip().split(' ')] for line in open("tlskeys.txt", 'r').readlines()]
 
     if args.block_size is not None:
         main_conf.write("block-size = {}\n".format(args.block_size))
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         main_conf.write("cliburst = {}\n".format(args.cliburst))
     if not (args.pace_maker is None):
         main_conf.write("pace-maker = {}\n".format(args.pace_maker))
-    for r in zip(replicas, keys, tls_keys[:len(keys)], itertools.count(0)):
+    for r in zip(replicas, keys, tls_keys2[:len(keys)], itertools.count(0)):
         main_conf.write("replica = {}, {}, {}\n".format(r[0], r[1][0], r[2][2]))
         r_conf_name = "{}-sec{}.conf".format(prefix, r[3])
         nodes.write("{}:{}\t{}\n".format(r[3], r[0], r_conf_name))
