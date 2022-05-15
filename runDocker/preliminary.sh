@@ -3,11 +3,10 @@ sudo apt-get update
 #sudo add-apt-repository --yes --update ppa:ansible/ansible
 sudo apt-get -y install docker.io
 #Kauri
-#git clone https://github.com/LISH0038/libhotstuff.git
-#cd libhotstuff/runDocker
+#git clone https://github.com/LISH0038/libhotstuff.git && cd libhotstuff/runDocker
 sudo docker build -t kauri .
 "sudo apt-get update;sudo apt-get -y install docker.io; git clone https://github.com/LISH0038/libhotstuff.git; cd libhotstuff/runDocker;sudo docker build -t kauri ."
-sudo docker swarm init
+#sudo docker swarm init
 sudo docker network create --driver=overlay --subnet=10.1.0.0/16 kauri_network
 #cd ..
 #hotstuff
