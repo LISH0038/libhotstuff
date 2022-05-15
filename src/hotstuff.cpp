@@ -397,8 +397,11 @@ std::vector<int> HotStuffBase::get_child(int n, int self, int proposer) {
     }
     std::vector<int> children;
     while(base >>=1) {
-        LOG_INFO("add child: %d", tmp+base-1);
-        children.push_back(get_real_id(n, proposer, tmp + base-1));
+        int child = tmp + base;
+        LOG_INFO("add child: %d", child);
+        if (child < n) {
+            children.push_back(get_real_id(n, proposer, child));
+        }
     }
     return children;
 }
