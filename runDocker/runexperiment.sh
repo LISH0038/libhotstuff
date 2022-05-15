@@ -44,7 +44,6 @@ do
             docker exec -it $container bash -c "cd libhotstuff && tac log* | grep -m1 'commit <block'"
             docker exec -it $container bash -c "cd libhotstuff && tac log* | grep -m1 'x now state'"
             docker exec -it $container bash -c "cd libhotstuff && tac log* | grep -m1 'Average'"
-            docker exec -it $container bash -c "cd libhotstuff && tac log* | grep 'hotstuff'"
 
           fi
   done
