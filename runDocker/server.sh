@@ -69,7 +69,7 @@ sleep 5
 
 # Start Client on Host Machine
 if [ ${id} == 0 ]; then
-  gdb -ex r -ex bt -ex q --args ./examples/hotstuff-client --idx ${id} --iter -1000 --max-async 1000 > clientlog0 2>&1 &
+  gdb -ex r -ex bt -ex q --args ./examples/hotstuff-client --idx ${id} --iter -1000 --max-async 4000 > clientlog0 2>&1 &
 fi
 
 sleep 30
