@@ -14,6 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Required for some versions of Cygwin to declare gettimeofday
+// see: http://stackoverflow.com/questions/36901803/gettimeofday-not-declared-in-this-scope-cygwin
+#   define _BSD_SOURCE
 
 #ifndef _HOTSTUFF_CONSENSUS_H
 #define _HOTSTUFF_CONSENSUS_H
@@ -63,6 +66,10 @@ class HotStuffCore {
     void on_qc_finish(const block_t &blk);
     void on_propose_(const Proposal &prop);
     void on_receive_proposal_(const Proposal &prop);
+    uint64_t summed_latency;
+    uint64_t processed_blocks;
+
+    std::unordered_map<const uint256_t, timeval> proposal_time;
 
     protected:
     ReplicaID id;                  /**< identity of the replica itself */
