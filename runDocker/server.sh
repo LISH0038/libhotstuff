@@ -29,6 +29,10 @@ i=0
 # Go through the list of servers of the given services to identify the number of servers and the id of this server.
 # shellcheck disable=SC2046
 echo $(dig A $service +short | sort -u)
+sleep 2
+echo $(dig A $service +short | sort -u)
+sleep 2
+echo $(dig A $service +short | sort -u)
 
 for ip in $(dig A $service +short | sort -u)
 do
