@@ -24,6 +24,7 @@
 #include <cassert>
 #include <set>
 #include <unordered_map>
+#include <sys/time.h>
 
 #include "hotstuff/promise.hpp"
 #include "hotstuff/type.h"
