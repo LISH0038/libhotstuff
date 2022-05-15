@@ -48,7 +48,7 @@ do
           fi
   done
   echo "******************** End of Baseline results ******************** "
-  sleep 300
+  sleep 3000
   docker stack rm libhotstuff
 #
 #  for i in {1..2}

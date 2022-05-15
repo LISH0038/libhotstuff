@@ -1,6 +1,6 @@
 trap 'exit 0' INT
 
-#sleep 2
+sleep 2
 
 # Initial Parameter Setup
 #crypto=$1
@@ -21,7 +21,7 @@ git checkout new
 # Do a quick compile of the branch
 git pull && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED=ON -DHOTSTUFF_PROTO_LOG=ON && make
 
-#sleep 30
+sleep 30
 
 id=0
 i=0
@@ -43,17 +43,17 @@ do
   ((i++))
 done
 
-#sleep 20
+sleep 20
 
 # Store all services in the list of IPs (first internal nodes then the leaf nodes)
 dig A $service +short | sort -u | sed -e 's/$/ 1/' >> ips
 
-#sleep 5
+sleep 5
 
 # Generate the HotStuff config file based on the given parameters
 python3 scripts/gen_conf.py --ips "ips" --block-size $blocksize
 
-#sleep 20
+sleep 20
 
 echo "Starting Application: #${i}"
 
