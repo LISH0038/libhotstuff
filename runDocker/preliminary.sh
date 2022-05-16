@@ -4,7 +4,7 @@ sudo apt-get update
 sudo apt-get -y install docker.io
 sudo usermod -aG docker $USER
 #Kauri
-git clone https://github.com/LISH0038/libhotstuff.git && cd libhotstuff/runDocker && git checkout new
+#git clone https://github.com/LISH0038/libhotstuff.git && cd libhotstuff/runDocker && git checkout new
 sudo docker build -t kauri .
 #"sudo apt-get update;sudo apt-get -y install docker.io; git clone https://github.com/LISH0038/libhotstuff.git; cd libhotstuff/runDocker;sudo docker build -t kauri ."
 #sudo docker swarm init
