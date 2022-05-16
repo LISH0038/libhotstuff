@@ -32,7 +32,7 @@ do
   # Deploy experiment
   docker stack deploy -c kauri-temp.yaml libhotstuff &
   # Docker startup time + 5*60s of experiment runtime
-  sleep 200
+  sleep 450
 
   echo "******************** Baseline results ******************** "
   # Collect and print results.

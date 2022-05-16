@@ -29,11 +29,6 @@ i=0
 # Go through the list of servers of the given services to identify the number of servers and the id of this server.
 # shellcheck disable=SC2046
 echo $(dig A $service +short | sort -u)
-sleep 2
-echo $(dig A $service +short | sort -u)
-sleep 2
-echo $(dig A $service +short | sort -u)
-
 for ip in $(dig A $service +short | sort -u)
 do
   for myip in $(ifconfig -a | awk '$1 == "inet" {print $2}')
@@ -76,7 +71,7 @@ if [ ${id} == 0 ]; then
   gdb -ex r -ex bt -ex q --args ./examples/hotstuff-client --idx ${id} --iter -1000 --max-async 100000 > clientlog0 2>&1 &
 fi
 
-sleep 30
+sleep 300
 
 killall hotstuff-client &
 killall hotstuff-app &

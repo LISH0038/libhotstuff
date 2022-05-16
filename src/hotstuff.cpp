@@ -602,7 +602,6 @@ void HotStuffBase::start(
         auto &addr = std::get<0>(replicas[i]);
         auto cert_hash = std::move(std::get<2>(replicas[i]));
         valid_tls_certs.insert(cert_hash);
-        LOG_INFO("pn.enable_tls:%d", pn.enable_tls);
         auto peer = pn.enable_tls ? salticidae::PeerId(cert_hash) : salticidae::PeerId(addr);
         HotStuffCore::add_replica(i, peer, std::move(std::get<1>(replicas[i])));
 //        if (addr != listen_addr)
