@@ -318,7 +318,7 @@ void HotStuffBase::on_clock(int) {
      * if yes, schedule the sending.
      */
     LOG_INFO("Here, send_index = [%d]", send_index);
-    if (id == pmaker->get_proposer() && sndqueue.empty() && send_index < peers.size()) {
+    if (id == pmaker->get_proposer() && sndqueue.empty() && send_index < peers.size() - 1) {
         LOG_INFO("Here2, send_index = [%d]", send_index);
         int tid = childlist[send_index++];
         LOG_INFO("[0] send to child: %d", tid);
