@@ -317,12 +317,12 @@ void HotStuffBase::on_clock(int) {
      * This block checks whether the leader needs to move on to send to the next child,
      * if yes, schedule the sending.
      */
-//    LOG_INFO("Here, send_index = [%d]", send_index);
+    LOG_INFO("Here, send_index = [%d]", send_index);
     if (id == pmaker->get_proposer() && sndqueue.empty() && send_index < peers.size()) {
-//        LOG_INFO("Here2, send_index = [%d]", send_index);
+        LOG_INFO("Here2, send_index = [%d]", send_index);
         int tid = childlist[send_index++];
-//        LOG_INFO("[0] send to child: %d", tid);
-//        LOG_INFO("[%s] enqueue backup msg to %d", get_id(), tid);
+        LOG_INFO("[0] send to child: %d", tid);
+        LOG_INFO("[%s] enqueue backup msg to %d", get_id(), tid);
         send_propose(curProp, tid);
     }
 
@@ -333,8 +333,8 @@ void HotStuffBase::on_clock(int) {
         auto pair = sndqueue.front();
         sndqueue.pop_front();
         size = pair.first.serialized.size();
-//        LOG_INFO(" [%d] send chunk of %lu bytes to [%d]", get_id(), size, pair.second);
-//        LOG_INFO("  peerId = [%d] \n", peers[pair.second]);
+        LOG_INFO(" [%d] send chunk of %lu bytes to [%d]", get_id(), size, pair.second);
+        LOG_INFO("  peerId = [%d] \n", peers[pair.second]);
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
 
