@@ -257,7 +257,8 @@ class HotStuffBase: public HotStuffCore {
             pacemaker_bt pmaker,
             EventContext ec,
             size_t nworker,
-            const Net::Config &netconfig);
+            const Net::Config &netconfig,
+            size_t bandwidth);
 
     ~HotStuffBase();
 
