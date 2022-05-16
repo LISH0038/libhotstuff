@@ -173,6 +173,7 @@ int main(int argc, char **argv) {
     auto opt_notls = Config::OptValFlag::create(false);
     auto opt_max_rep_msg = Config::OptValInt::create(4 << 20); // 4M by default
     auto opt_max_cli_msg = Config::OptValInt::create(65536); // 64K by default
+    auto opt_bandwidth = Config::OptValInt::create(1000); // 1000M by default
 
     config.add_opt("block-size", opt_blk_size, Config::SET_VAL);
     config.add_opt("parent-limit", opt_parent_limit, Config::SET_VAL);
@@ -196,6 +197,7 @@ int main(int argc, char **argv) {
     config.add_opt("notls", opt_notls, Config::SWITCH_ON, 's', "disable TLS");
     config.add_opt("max-rep-msg", opt_max_rep_msg, Config::SET_VAL, 'S', "the maximum replica message size");
     config.add_opt("max-cli-msg", opt_max_cli_msg, Config::SET_VAL, 'S', "the maximum client message size");
+    config.add_opt("bandwidth", opt_bandwidth, Config::SET_VAL, 'S', "bandwidth");
     config.add_opt("help", opt_help, Config::SWITCH_ON, 'h', "show this help info");
 
     EventContext ec;
@@ -272,7 +274,8 @@ int main(int argc, char **argv) {
                         ec,
                         opt_nworker->get(),
                         repnet_config,
-                        clinet_config);
+                        clinet_config,
+                        opt_bandwidth ->get());
     std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> reps;
     for (auto &r: replicas)
     {
@@ -304,9 +307,10 @@ HotStuffApp::HotStuffApp(uint32_t blk_size,
                         const EventContext &ec,
                         size_t nworker,
                         const Net::Config &repnet_config,
-                        const ClientNetwork<opcode_t>::Config &clinet_config):
+                        const ClientNetwork<opcode_t>::Config &clinet_config,
+                        size_t bandwidth):
     HotStuff(blk_size, idx, raw_privkey,
-            plisten_addr, std::move(pmaker), ec, nworker, repnet_config),
+            plisten_addr, std::move(pmaker), ec, nworker, repnet_config, bandwidth),
     stat_period(stat_period),
     impeach_timeout(impeach_timeout),
     ec(ec),

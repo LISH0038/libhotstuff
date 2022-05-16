@@ -179,8 +179,8 @@ class HotStuffBase: public HotStuffCore {
     std::list<std::pair<MsgChunk, int>> sndqueue;
     std::map<PeerId, DataStream> recvqueue;
     std::vector<int> childlist;
-    size_t MaxRate = 1000000000;
-    size_t ChunkSize = 1000;
+    size_t max_rate;
+    size_t chunk_size = 1024;
     int send_index = 0;
     Proposal curProp;
 
@@ -328,7 +328,8 @@ class HotStuff: public HotStuffBase {
             pacemaker_bt pmaker,
             EventContext ec = EventContext(),
             size_t nworker = 4,
-            const Net::Config &netconfig = Net::Config()):
+            const Net::Config &netconfig = Net::Config(),
+            size_t bandwidth):
         HotStuffBase(blk_size,
                     rid,
                     new PrivKeyType(raw_privkey),
@@ -336,7 +337,8 @@ class HotStuff: public HotStuffBase {
                     std::move(pmaker),
                     ec,
                     nworker,
-                    netconfig) {}
+                    netconfig,
+                    bandwidth) {}
 
     void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &replicas, bool ec_loop = false) {
         std::vector<std::tuple<NetAddr, pubkey_bt, uint256_t>> reps;

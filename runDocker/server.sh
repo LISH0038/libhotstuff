@@ -57,7 +57,7 @@ sleep 20
 echo "Starting Application: #${i}"
 
 # Startup Kauri
-gdb -ex r -ex bt -ex q --args ./examples/hotstuff-app --conf ./hotstuff.gen-sec${id}.conf > log${id} 2>&1 &
+gdb -ex r -ex bt -ex q --args ./examples/hotstuff-app --conf ./hotstuff.gen-sec${id}.conf --bandwidth ${bandwidth} > log${id} 2>&1 &
 
 sleep 20
 

@@ -338,7 +338,7 @@ void HotStuffBase::on_clock(int) {
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
 
-    delay = ((double) size) / MaxRate;
+    delay = ((double) size) / max_rate;
 
     clock.del();
     clock.add(delay);
@@ -359,8 +359,8 @@ void HotStuffBase::send_propose(Proposal &prop, int tid)
 //    ptr = str.data();
     empty = sndqueue.empty();
 
-    for (done = 0; done < size; done += ChunkSize) {
-        len = ChunkSize;
+    for (done = 0; done < size; done += chunk_size) {
+        len = chunk_size;
         if ((done + len) > size)
             len = size - done;
         const char *ptr = (const char *)
@@ -510,7 +510,8 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
                     pacemaker_bt pmaker,
                     EventContext ec,
                     size_t nworker,
-                    const Net::Config &netconfig):
+                    const Net::Config &netconfig,
+                    size_t bandwidth):
         HotStuffCore(rid, std::move(priv_key)),
         listen_addr(listen_addr),
         blk_size(blk_size),
@@ -520,6 +521,7 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
         pn(ec, netconfig),
         pmaker(std::move(pmaker)),
 
+        max_rate(1024 * bandwidth),
         fetched(0), delivered(0),
         nsent(0), nrecv(0),
         part_parent_size(0),
