@@ -129,7 +129,8 @@ class HotStuffApp: public HotStuff {
                 const EventContext &ec,
                 size_t nworker,
                 const Net::Config &repnet_config,
-                const ClientNetwork<opcode_t>::Config &clinet_config);
+                const ClientNetwork<opcode_t>::Config &clinet_config,
+                size_t bandwidth);
 
     void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps);
     void stop();
