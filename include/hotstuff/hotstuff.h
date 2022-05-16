@@ -329,7 +329,7 @@ class HotStuff: public HotStuffBase {
             EventContext ec = EventContext(),
             size_t nworker = 4,
             const Net::Config &netconfig = Net::Config(),
-            size_t bandwidth):
+            size_t bandwidth = 1000):
         HotStuffBase(blk_size,
                     rid,
                     new PrivKeyType(raw_privkey),
