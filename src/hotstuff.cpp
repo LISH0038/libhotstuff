@@ -321,8 +321,7 @@ void HotStuffBase::on_clock(int) {
     if (id == pmaker->get_proposer() && sndqueue.empty() && send_index < peers.size() - 1) {
 //        LOG_INFO("Here2, send_index = [%d]", send_index);
         int tid = childlist[send_index++];
-//        LOG_INFO("[0] send to child: %d", tid);
-//        LOG_INFO("[%d] enqueue backup msg to %d ", get_id(), tid);
+        LOG_INFO("[%d] enqueue backup msg to %d ", get_id(), tid);
         send_propose(curProp, tid);
     }
 
@@ -333,7 +332,7 @@ void HotStuffBase::on_clock(int) {
         auto pair = sndqueue.front();
         sndqueue.pop_front();
         size = pair.first.serialized.size();
-//        LOG_INFO(" [%d] send chunk of %lu bytes to [%d]", get_id(), size, pair.second);
+        LOG_INFO(" [%d] send chunk of %lu bytes to [%d]", get_id(), size, pair.second);
 //        LOG_INFO("  peerId = [%d] \n", peers[pair.second]);
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
@@ -366,8 +365,8 @@ void HotStuffBase::send_propose(Proposal &prop, int tid)
         const char *ptr = (const char *)
                 s.get_data_inplace(len);
         bytearray_t data = bytearray_t(ptr, ptr+len);
-//        LOG_INFO("enqueue chunk of %lu bytes (%lu/%lu)", len,
-//               done + len, size);
+        LOG_INFO("enqueue chunk of %lu bytes (%lu/%lu)", len,
+               done + len, size);
         sndqueue.push_back(std::make_pair(MsgChunk(data),
                                      tid));
     }
