@@ -180,7 +180,7 @@ class HotStuffBase: public HotStuffCore {
     std::map<PeerId, DataStream> recvqueue;
     std::vector<int> childlist;
     size_t max_rate;
-    size_t chunk_size = 1024;
+    size_t chunk_size = 10240;
     int send_index = 0;
     Proposal curProp;
 
