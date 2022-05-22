@@ -520,7 +520,7 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
         pn(ec, netconfig),
         pmaker(std::move(pmaker)),
 
-        max_rate(1024 * bandwidth),
+        max_rate(1024 * 1024 * bandwidth),
         fetched(0), delivered(0),
         nsent(0), nrecv(0),
         part_parent_size(0),
