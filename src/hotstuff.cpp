@@ -214,18 +214,18 @@ void HotStuffBase::propose_handler(MsgPropose &&msg, const Net::conn_t &conn) {
 //        return;
 //    }
 
+    promise::all(std::vector<promise_t>{
+        async_deliver_blk(blk->get_hash(), get_config().get_peer_id(prop.proposer))
+    }).then([this, prop = std::move(prop)]() {
+        on_receive_proposal(prop);
+    });
+
     // relay msg to children
     std::vector<int> childlist = get_child(peers.size(), get_id(), prop.proposer);
 
     for (const auto& tid : childlist) {
         send_propose(prop, tid);
     }
-
-    promise::all(std::vector<promise_t>{
-        async_deliver_blk(blk->get_hash(), get_config().get_peer_id(prop.proposer))
-    }).then([this, prop = std::move(prop)]() {
-        on_receive_proposal(prop);
-    });
 }
 
 void HotStuffBase::vote_handler(MsgVote &&msg, const Net::conn_t &conn) {
