@@ -72,15 +72,15 @@ class HotStuffCore {
 
     std::unordered_map<const uint256_t, timeval> proposal_time;
 
-    // new
-    int send_index = 0;
-    Proposal *curProp;
-
     protected:
     ReplicaID id;                  /**< identity of the replica itself */
 
     public:
     BoxObj<EntityStorage> storage;
+
+    // new
+    int send_index = 0;
+    Proposal *curProp;
 
     HotStuffCore(ReplicaID id, privkey_bt &&priv_key);
     virtual ~HotStuffCore() {
