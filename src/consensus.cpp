@@ -190,7 +190,7 @@ block_t HotStuffCore::on_propose(const std::vector<uint256_t> &cmds,
     update(bnew);
     Proposal prop(id, bnew, nullptr);
     send_index = 0;
-    curProp = prop;
+    curProp = &prop;
 
     LOG_PROTO("propose %s", std::string(*bnew).c_str());
     if (bnew->height <= vheight)

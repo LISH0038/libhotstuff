@@ -74,7 +74,7 @@ class HotStuffCore {
 
     // new
     int send_index = 0;
-    Proposal curProp;
+    Proposal *curProp;
 
     protected:
     ReplicaID id;                  /**< identity of the replica itself */
