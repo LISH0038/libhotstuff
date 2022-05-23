@@ -72,6 +72,10 @@ class HotStuffCore {
 
     std::unordered_map<const uint256_t, timeval> proposal_time;
 
+    // new
+    int send_index = 0;
+    Proposal curProp;
+
     protected:
     ReplicaID id;                  /**< identity of the replica itself */
 
