@@ -20,3 +20,5 @@ sudo docker build -t kauri .
 #sudo apt-get install autoconf libtool
 #cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED=ON -DHOTSTUFF_PROTO_LOG=ON
 #make
+
+#sudo apt-get -y install git gcc g++ make cmake libuv1-dev libssl-dev libsodium-dev autoconf libnet1-dev libtool pastebinit python3 bash gdb dnsutils nano inetutils-ping net-tools sudo iproute2 && git submodule update --init --recursive && cmake . && make

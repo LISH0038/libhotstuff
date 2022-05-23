@@ -189,17 +189,16 @@ block_t HotStuffCore::on_propose(const std::vector<uint256_t> &cmds,
     on_deliver_blk(bnew);
     update(bnew);
     Proposal prop(id, bnew, nullptr);
-    send_index = 0;
-    curProp = &prop;
-
     LOG_PROTO("propose %s", std::string(*bnew).c_str());
     if (bnew->height <= vheight)
         throw std::runtime_error("new block should be higher than vheight");
+    /* boradcast to other replicas */
+    do_broadcast_proposal(prop);
+
     /* self-receive the proposal (no need to send it through the network) */
     on_receive_proposal(prop);
     on_propose_(prop);
-    /* boradcast to other replicas */
-    do_broadcast_proposal(prop);
+
     return bnew;
 }
 

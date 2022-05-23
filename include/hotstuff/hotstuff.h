@@ -181,8 +181,8 @@ class HotStuffBase: public HotStuffCore {
     std::vector<int> childlist;
     size_t max_rate;
     size_t chunk_size = 10240;
-//    int send_index = 0;
-//    Proposal curProp;
+    int send_index = 0;
+    Proposal curProp;
 
     private:
     /** whether libevent handle is owned by itself */
