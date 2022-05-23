@@ -184,16 +184,18 @@ block_t HotStuffCore::on_propose(const std::vector<uint256_t> &cmds,
             hqc.first,
             nullptr
         ));
-    const uint256_t bnew_hash = bnew->get_hash();
-    bnew->self_qc = create_quorum_cert(bnew_hash);
-    on_deliver_blk(bnew);
-    update(bnew);
+
     Proposal prop(id, bnew, nullptr);
     LOG_PROTO("propose %s", std::string(*bnew).c_str());
     if (bnew->height <= vheight)
         throw std::runtime_error("new block should be higher than vheight");
     /* boradcast to other replicas */
     do_broadcast_proposal(prop);
+
+    const uint256_t bnew_hash = bnew->get_hash();
+    bnew->self_qc = create_quorum_cert(bnew_hash);
+    on_deliver_blk(bnew);
+    update(bnew);
 
     /* self-receive the proposal (no need to send it through the network) */
     on_receive_proposal(prop);
