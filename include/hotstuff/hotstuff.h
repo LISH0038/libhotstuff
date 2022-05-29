@@ -177,13 +177,13 @@ class HotStuffBase: public HotStuffCore {
 
     TimerEvent clock;
     std::list<std::pair<MsgChunk, int>> sndqueue;
-    std::map<PeerId, DataStream> recvqueue;
+    std::unordered_map<PeerId, DataStream> recvqueue;
     std::vector<int> childlist;
     size_t max_rate;
     size_t chunk_size = 10240;
     int send_index = 0;
     Proposal curProp;
-    map<std::string, unordered_set<PeerId>> ackSet;
+    std::unordered_map<std::string, unordered_set<PeerId>> ackSet;
 
     private:
     /** whether libevent handle is owned by itself */
