@@ -562,7 +562,7 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
 void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
 //    LOG_INFO("do_broadcast_proposal");
     send_index = 0;
-    if (curProp != nullptr)
+    if (curProp != NULL)
     ackSet.erase(std::string(curProp));
     curProp = prop;
     childlist = get_leader_child(peers.size(), get_id());
