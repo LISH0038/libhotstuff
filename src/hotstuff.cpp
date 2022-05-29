@@ -340,7 +340,7 @@ void HotStuffBase::on_clock(int) {
         pn.send_msg(std::move(pair.first), peers[pair.second]);
     }
 
-    delay = ((double) size) / max_rate;
+    delay = ((double) chunk_size) / max_rate;
 
     clock.del();
     clock.add(delay);
