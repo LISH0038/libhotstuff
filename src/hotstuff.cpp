@@ -343,7 +343,7 @@ void HotStuffBase::on_clock(int) {
     delay = ((double) size) / max_rate;
 
     clock.del();
-    clock.add(1);
+    clock.add(delay);
 }
 
 void HotStuffBase::send_propose(Proposal &prop, int tid)
