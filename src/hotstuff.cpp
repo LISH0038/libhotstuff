@@ -562,7 +562,7 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
 void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
     LOG_INFO("do_broadcast_proposal");
     send_index = 0;
-    if (curProp->blk != nullptr ) {
+    if (curProp.blk != nullptr ) {
         LOG_INFO("std::string(curProp):%s", std::string(curProp).c_str());
         ackSet.erase(std::string(curProp));
     }
