@@ -239,6 +239,7 @@ void HotStuffBase::vote_handler(MsgVote &&msg, const Net::conn_t &conn) {
     RcObj<Vote> v(new Vote(std::move(msg.vote)));
 //    blk_ack_set[v->blk_hash].insert(peer);
 //    LOG_INFO("blk_ack_set size [%d]", blk_ack_set[v->blk_hash].size());
+    ackSet[std::string(curProp)].insert(peer);
 
     promise::all(std::vector<promise_t>{
         async_deliver_blk(v->blk_hash, peer),
@@ -301,7 +302,6 @@ void HotStuffBase::on_chunk(MsgChunk &&msg, const Net::conn_t &conn)
     if (msg.eom) {
 //        LOG_INFO("Received complete: '%s' (%lu bytes)",
 //                 std::string(recv).c_str(), std::string(recv).length());
-        ackSet[std::string(curProp)].insert(pid);
         propose_handler(MsgPropose(recv), conn);
         recv.clear();
         recvqueue[pid] = recv;
