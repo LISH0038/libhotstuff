@@ -291,6 +291,8 @@ void HotStuffBase::on_chunk(MsgChunk &&msg, const Net::conn_t &conn)
 {
     PeerId pid = conn->get_peer_id();
     DataStream recv;
+    LOG_INFO("[%d] received chunk from %d ", get_id(), pid);
+
     if (recvqueue.find(pid) != recvqueue.end()) {
         recv = recvqueue[pid];
     } else {
