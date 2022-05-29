@@ -183,6 +183,7 @@ class HotStuffBase: public HotStuffCore {
     size_t chunk_size = 10240;
     int send_index = 0;
     Proposal curProp;
+    map<std::string, unordered_set<PeerId>> ackSet;
 
     private:
     /** whether libevent handle is owned by itself */

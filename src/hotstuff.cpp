@@ -301,6 +301,7 @@ void HotStuffBase::on_chunk(MsgChunk &&msg, const Net::conn_t &conn)
     if (msg.eom) {
 //        LOG_INFO("Received complete: '%s' (%lu bytes)",
 //                 std::string(recv).c_str(), std::string(recv).length());
+        ackSet[std::string(curProp)].insert(pid);
         propose_handler(MsgPropose(recv), conn);
         recv.clear();
         recvqueue[pid] = recv;
@@ -322,7 +323,10 @@ void HotStuffBase::on_clock(int) {
 //    LOG_INFO("Here, send_index = [%d]", send_index);
     if (id == pmaker->get_proposer() && sndqueue.empty() && send_index < peers.size() - 1) {
 //        LOG_INFO("Here2, send_index = [%d]", send_index);
-        int tid = childlist[send_index++];
+        unordered_set<uint32_t> acks = ackSet[std::string(curProp)];
+        while (acks.find(peers[childlist[send_index++]]) != acks.end());
+
+        int tid = childlist[send_index];
         LOG_INFO("[%d] enqueue backup msg to %d ", get_id(), tid);
         send_propose(curProp, tid);
         return;
@@ -557,6 +561,7 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
 void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
 //    LOG_INFO("do_broadcast_proposal");
     send_index = 0;
+    ackSet.erase(std::string(curProp));
     curProp = prop;
     childlist = get_leader_child(peers.size(), get_id());
 //    for (auto&v:childlist) {
