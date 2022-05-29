@@ -323,7 +323,7 @@ void HotStuffBase::on_clock(int) {
 //    LOG_INFO("Here, send_index = [%d]", send_index);
     if (id == pmaker->get_proposer() && sndqueue.empty() && send_index < peers.size() - 1) {
 //        LOG_INFO("Here2, send_index = [%d]", send_index);
-        std::unordered_set<std::string> acks = ackSet[std::string(curProp)];
+        std::unordered_set<PeerId> acks = ackSet[std::string(curProp)];
         while (acks.find(peers[childlist[send_index++]]) != acks.end());
 
         int tid = childlist[send_index];
