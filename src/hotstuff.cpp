@@ -324,7 +324,7 @@ void HotStuffBase::on_clock(int) {
     if (id == pmaker->get_proposer() && sndqueue.empty() ) {
         LOG_INFO("Here2, send_index = [%d]", send_index);
         std::unordered_set<PeerId> acks = ackSet[std::string(curProp)];
-        while (acks.find(peers[childlist[send_index++]]) != acks.end());
+        while (send_index < peers.size() - 1 && acks.find(peers[childlist[send_index++]]) != acks.end());
         if (send_index < peers.size() - 1) {
             int tid = childlist[send_index];
             LOG_INFO("[%d] enqueue backup msg to %d ", get_id(), tid);
