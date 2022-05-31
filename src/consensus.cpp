@@ -259,7 +259,7 @@ void HotStuffCore::on_receive_vote(const Vote &vote) {
         qc = create_quorum_cert(blk->get_hash());
     }
     qc->add_part(vote.voter, *vote.cert);
-    if (qsize + 1 == config.nmajority)
+    if (qsize + 1 >= config.nmajority)
     {
         qc->compute();
         update_hqc(blk, qc);
