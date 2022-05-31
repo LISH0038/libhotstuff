@@ -246,7 +246,7 @@ void HotStuffCore::on_receive_vote(const Vote &vote) {
     block_t blk = get_delivered_blk(vote.blk_hash);
     assert(vote.cert);
     size_t qsize = blk->voted.size();
-    if (qsize >= config.nmajority) return;
+//    if (qsize >= config.nmajority) return;
     if (!blk->voted.insert(vote.voter).second)
     {
         LOG_WARN("duplicate vote for %s from %d", get_hex10(vote.blk_hash).c_str(), vote.voter);
