@@ -107,9 +107,9 @@ class HotStuffApp: public HotStuff {
 
     void state_machine_execute(const Finality &fin) override {
         reset_imp_timer();
-//#ifndef HOTSTUFF_ENABLE_BENCHMARK
-//        HOTSTUFF_LOG_INFO("replicated %s", std::string(fin).c_str());
-//#endif
+#ifndef HOTSTUFF_ENABLE_BENCHMARK
+        HOTSTUFF_LOG_INFO("replicated %s", std::string(fin).c_str());
+#endif
     }
 
 #ifdef HOTSTUFF_MSG_STAT
@@ -117,7 +117,7 @@ class HotStuffApp: public HotStuff {
     void print_stat() const;
 #endif
 
-    public:
+public:
     HotStuffApp(uint32_t blk_size,
                 double stat_period,
                 double impeach_timeout,
@@ -129,8 +129,7 @@ class HotStuffApp: public HotStuff {
                 const EventContext &ec,
                 size_t nworker,
                 const Net::Config &repnet_config,
-                const ClientNetwork<opcode_t>::Config &clinet_config,
-                size_t bandwidth);
+                const ClientNetwork<opcode_t>::Config &clinet_config);
 
     void start(const std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> &reps);
     void stop();
@@ -167,14 +166,13 @@ int main(int argc, char **argv) {
     auto opt_prop_delay = Config::OptValDouble::create(1);
     auto opt_imp_timeout = Config::OptValDouble::create(11);
     auto opt_nworker = Config::OptValInt::create(1);
-    auto opt_repnworker = Config::OptValInt::create(2);
-    auto opt_repburst = Config::OptValInt::create(10000);
-    auto opt_clinworker = Config::OptValInt::create(2);
+    auto opt_repnworker = Config::OptValInt::create(1);
+    auto opt_repburst = Config::OptValInt::create(100);
+    auto opt_clinworker = Config::OptValInt::create(8);
     auto opt_cliburst = Config::OptValInt::create(1000);
     auto opt_notls = Config::OptValFlag::create(false);
     auto opt_max_rep_msg = Config::OptValInt::create(4 << 20); // 4M by default
     auto opt_max_cli_msg = Config::OptValInt::create(65536); // 64K by default
-    auto opt_bandwidth = Config::OptValInt::create(1000); // 1000M by default
 
     config.add_opt("block-size", opt_blk_size, Config::SET_VAL);
     config.add_opt("parent-limit", opt_parent_limit, Config::SET_VAL);
@@ -198,7 +196,6 @@ int main(int argc, char **argv) {
     config.add_opt("notls", opt_notls, Config::SWITCH_ON, 's', "disable TLS");
     config.add_opt("max-rep-msg", opt_max_rep_msg, Config::SET_VAL, 'S', "the maximum replica message size");
     config.add_opt("max-cli-msg", opt_max_cli_msg, Config::SET_VAL, 'S', "the maximum client message size");
-    config.add_opt("bandwidth", opt_bandwidth, Config::SET_VAL, 'S', "bandwidth");
     config.add_opt("help", opt_help, Config::SWITCH_ON, 'h', "show this help info");
 
     EventContext ec;
@@ -218,6 +215,7 @@ int main(int argc, char **argv) {
             throw HotStuffError("invalid replica info");
         replicas.push_back(std::make_tuple(res[0], res[1], res[2]));
     }
+
     if (!(0 <= idx && (size_t)idx < replicas.size()))
         throw HotStuffError("replica idx out of range");
     std::string binding_addr = std::get<0>(replicas[idx]);
@@ -249,42 +247,41 @@ int main(int argc, char **argv) {
     {
         auto tls_priv_key = new salticidae::PKey(
                 salticidae::PKey::create_privkey_from_der(
-                    hotstuff::from_hex(opt_tls_privkey->get())));
+                        hotstuff::from_hex(opt_tls_privkey->get())));
         auto tls_cert = new salticidae::X509(
                 salticidae::X509::create_from_der(
-                    hotstuff::from_hex(opt_tls_cert->get())));
+                        hotstuff::from_hex(opt_tls_cert->get())));
         repnet_config
-            .enable_tls(true)
-            .tls_key(tls_priv_key)
-            .tls_cert(tls_cert);
+                .enable_tls(true)
+                .tls_key(tls_priv_key)
+                .tls_cert(tls_cert);
     }
     repnet_config
-        .burst_size(opt_repburst->get())
-        .nworker(opt_repnworker->get());
+            .burst_size(opt_repburst->get())
+            .nworker(opt_repnworker->get());
     clinet_config
-        .burst_size(opt_cliburst->get())
-        .nworker(opt_clinworker->get());
+            .burst_size(opt_cliburst->get())
+            .nworker(opt_clinworker->get());
     papp = new HotStuffApp(opt_blk_size->get(),
-                        opt_stat_period->get(),
-                        opt_imp_timeout->get(),
-                        idx,
-                        hotstuff::from_hex(opt_privkey->get()),
-                        plisten_addr,
-                        NetAddr("0.0.0.0", client_port),
-                        std::move(pmaker),
-                        ec,
-                        opt_nworker->get(),
-                        repnet_config,
-                        clinet_config,
-                        opt_bandwidth ->get());
+                           opt_stat_period->get(),
+                           opt_imp_timeout->get(),
+                           idx,
+                           hotstuff::from_hex(opt_privkey->get()),
+                           plisten_addr,
+                           NetAddr("0.0.0.0", client_port),
+                           std::move(pmaker),
+                           ec,
+                           opt_nworker->get(),
+                           repnet_config,
+                           clinet_config);
     std::vector<std::tuple<NetAddr, bytearray_t, bytearray_t>> reps;
     for (auto &r: replicas)
     {
         auto p = split_ip_port_cport(std::get<0>(r));
         reps.push_back(std::make_tuple(
-            NetAddr(p.first),
-            hotstuff::from_hex(std::get<1>(r)),
-            hotstuff::from_hex(std::get<2>(r))));
+                NetAddr(p.first),
+                hotstuff::from_hex(std::get<1>(r)),
+                hotstuff::from_hex(std::get<2>(r))));
     }
     auto shutdown = [&](int) { papp->stop(); };
     salticidae::SigEvent ev_sigint(ec, shutdown);
@@ -298,25 +295,24 @@ int main(int argc, char **argv) {
 }
 
 HotStuffApp::HotStuffApp(uint32_t blk_size,
-                        double stat_period,
-                        double impeach_timeout,
-                        ReplicaID idx,
-                        const bytearray_t &raw_privkey,
-                        NetAddr plisten_addr,
-                        NetAddr clisten_addr,
-                        hotstuff::pacemaker_bt pmaker,
-                        const EventContext &ec,
-                        size_t nworker,
-                        const Net::Config &repnet_config,
-                        const ClientNetwork<opcode_t>::Config &clinet_config,
-                        size_t bandwidth):
-    HotStuff(blk_size, idx, raw_privkey,
-            plisten_addr, std::move(pmaker), ec, nworker, repnet_config, bandwidth),
-    stat_period(stat_period),
-    impeach_timeout(impeach_timeout),
-    ec(ec),
-    cn(req_ec, clinet_config),
-    clisten_addr(clisten_addr) {
+                         double stat_period,
+                         double impeach_timeout,
+                         ReplicaID idx,
+                         const bytearray_t &raw_privkey,
+                         NetAddr plisten_addr,
+                         NetAddr clisten_addr,
+                         hotstuff::pacemaker_bt pmaker,
+                         const EventContext &ec,
+                         size_t nworker,
+                         const Net::Config &repnet_config,
+                         const ClientNetwork<opcode_t>::Config &clinet_config):
+        HotStuff(blk_size, idx, raw_privkey,
+                 plisten_addr, std::move(pmaker), ec, nworker, repnet_config),
+        stat_period(stat_period),
+        impeach_timeout(impeach_timeout),
+        ec(ec),
+        cn(req_ec, clinet_config),
+        clisten_addr(clisten_addr) {
     /* prepare the thread used for sending back confirmations */
     resp_tcall = new salticidae::ThreadCall(resp_ec);
     req_tcall = new salticidae::ThreadCall(req_ec);
