@@ -73,7 +73,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-option(HOTSTUFF_DEBUG_LOG "enable debug log" ON)
+option(HOTSTUFF_DEBUG_LOG "enable debug log" OFF)
 option(HOTSTUFF_NORMAL_LOG "enable normal log" ON)
 option(HOTSTUFF_PROTO_LOG "enable protocol log" ON)
 option(HOTSTUFF_MSG_STAT "eanble message statistics" ON)
