@@ -226,6 +226,7 @@ void HotStuffBase::propose_handler(MsgPropose &&msg, const Net::conn_t &conn) {
     for (const auto& tid : childlist) {
         send_propose(prop, tid);
     }
+    on_clock(0);
 }
 
 void HotStuffBase::vote_handler(MsgVote &&msg, const Net::conn_t &conn) {
@@ -332,7 +333,7 @@ void HotStuffBase::on_clock(int) {
             LOG_INFO("[%d] enqueue backup msg to %d ", get_id(), tid);
             send_propose(curProp, tid);
         }
-        return;
+//        return;
     }
 
     if (sndqueue.empty())
@@ -350,7 +351,7 @@ void HotStuffBase::on_clock(int) {
     delay = ((double) chunk_size) / max_rate;
 
     clock.del();
-    clock.add(0.01);
+    clock.add(0.005);
 }
 
 void HotStuffBase::send_propose(Proposal &prop, int tid)
@@ -384,8 +385,6 @@ void HotStuffBase::send_propose(Proposal &prop, int tid)
 
     if (!empty || sndqueue.empty())
         return;
-
-    on_clock(0);
 }
 int get_virtual_id(int n, int proposer, int self) {
     return self < proposer ? self + n - proposer : self - proposer;
@@ -580,6 +579,7 @@ void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
         int tid = childlist[i];
         send_propose(prop, tid);
     }
+    on_clock(0);
 }
 
 void HotStuffBase::do_vote(ReplicaID last_proposer, const Vote &vote) {
