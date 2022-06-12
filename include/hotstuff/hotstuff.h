@@ -193,7 +193,7 @@ namespace hotstuff {
 
         inline bool conn_handler(const salticidae::ConnPool::conn_t &, bool);
 
-        void do_broadcast_proposal(const Proposal &) override;
+        void do_broadcast_proposal(Proposal &) override;
         void do_vote(ReplicaID, const Vote &) override;
         void do_decide(Finality &&) override;
         void do_consensus(const block_t &blk) override;

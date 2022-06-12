@@ -376,7 +376,7 @@ namespace hotstuff {
         pn.listen(listen_addr);
     }
 
-    void HotStuffBase::do_broadcast_proposal(const Proposal &prop) {
+    void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
         //MsgPropose prop_msg(prop);
         pn.multicast_msg(MsgPropose(prop), peers);
         //for (const auto &replica: peers)
