@@ -32,9 +32,8 @@ do
   # Deploy experiment
   docker stack deploy -c kauri-temp.yaml libhotstuff &
   # Docker startup time + 5*60s of experiment runtime
-  sleep 170
+  sleep 160
 
-  echo "******************** Baseline results ******************** "
   # Collect and print results.
   for container in $(docker ps -q -f name="server")
   do
@@ -47,7 +46,24 @@ do
 
           fi
   done
-  echo "******************** End of Baseline results ******************** "
+  echo "******************** 1-min results ******************** "
+
+  sleep 240
+
+  # Collect and print results.
+  for container in $(docker ps -q -f name="server")
+  do
+          if [ ! $(docker exec -it $container bash -c "cd libhotstuff && test -e log0") ]
+          then
+
+            docker exec -it $container bash -c "cd libhotstuff && tac log* | grep -m1 'commit <block'"
+            docker exec -it $container bash -c "cd libhotstuff && tac log* | grep -m1 'x now state'"
+            docker exec -it $container bash -c "cd libhotstuff && tac log* | grep -m1 'Average'"
+
+          fi
+  done
+
+  echo "******************** 5-min results ******************** "
   sleep 3000
   docker stack rm libhotstuff
 #
