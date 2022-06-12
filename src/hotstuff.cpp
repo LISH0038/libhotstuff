@@ -350,7 +350,7 @@ void HotStuffBase::on_clock(int) {
     delay = ((double) chunk_size) / max_rate;
 
     clock.del();
-    clock.add(0.002);
+    clock.add(0.005);
 }
 
 void HotStuffBase::send_propose(Proposal &prop, int tid)
@@ -425,6 +425,8 @@ std::vector<int> HotStuffBase::get_leader_child(int n, int id) {
         // leader's direct child
         children.push_back(base);
     }
+    backup_start = children.size();
+    LOG_INFO("backup_start %d", backup_start);
 
     std::vector<int> subchild{bitmask,0};
     while(bitmask >>=1) {
@@ -562,10 +564,9 @@ HotStuffBase::HotStuffBase(uint32_t blk_size,
 }
 
 void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
-    LOG_INFO("do_broadcast_proposal");
-    send_index = 0;
+    send_index = backup_start;
     if (curProp.blk != nullptr ) {
-        LOG_INFO("std::string(curProp):%s", std::string(curProp).c_str());
+        LOG_DEBUG("std::string(curProp):%s", std::string(curProp).c_str());
         ackSet.erase(std::string(curProp));
     }
 
@@ -574,9 +575,11 @@ void HotStuffBase::do_broadcast_proposal(Proposal &prop) {
 //    for (auto&v:childlist) {
 //        LOG_INFO("%d,", v);
 //    }
-    int tid = childlist[send_index++];
-    LOG_INFO("send_propose");
-    send_propose(prop, tid);
+
+    for (int i = 0; i < backup_start; i++) {
+        int tid = childlist[i];
+        send_propose(prop, tid);
+    }
 }
 
 void HotStuffBase::do_vote(ReplicaID last_proposer, const Vote &vote) {

@@ -179,6 +179,7 @@ class HotStuffBase: public HotStuffCore {
     std::list<std::pair<MsgChunk, int>> sndqueue;
     std::unordered_map<PeerId, DataStream> recvqueue;
     std::vector<int> childlist;
+    int backup_start = 0;
     size_t max_rate;
     size_t chunk_size = 10240;
     int send_index = 0;
