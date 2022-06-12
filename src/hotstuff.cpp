@@ -339,7 +339,6 @@ void HotStuffBase::on_clock(int) {
             int tid = childlist[send_index++];
             LOG_INFO("[%d] enqueue backup msg to %d ", get_id(), tid);
             send_propose(curProp, tid);
-            sleep(0.01);
         }
 //        return;
     }
