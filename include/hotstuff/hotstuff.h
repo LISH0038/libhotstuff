@@ -185,6 +185,7 @@ class HotStuffBase: public HotStuffCore {
     int send_index = 0;
     Proposal curProp;
     std::unordered_map<std::string, std::unordered_set<PeerId>> ackSet;
+    std::unordered_set<std::string> sentSet;
 
     private:
     /** whether libevent handle is owned by itself */

@@ -203,8 +203,9 @@ void HotStuffBase::propose_handler(MsgPropose &&msg, const Net::conn_t &conn) {
     const PeerId &peer = conn->get_peer_id();
     if (peer.is_null()) return;
     msg.postponed_parse(this);
+    std::string s = std::string(msg.proposal);
     LOG_INFO("Received proposal: '%s' (%lu bytes)",
-             std::string(msg.proposal).c_str(), std::string(msg.proposal).length());
+             s.c_str(), std::string(msg.proposal).length());
     auto &prop = msg.proposal;
     block_t blk = prop.blk;
     if (!blk) return;
@@ -220,13 +221,19 @@ void HotStuffBase::propose_handler(MsgPropose &&msg, const Net::conn_t &conn) {
         on_receive_proposal(prop);
     });
 
-    // relay msg to children
-    std::vector<int> childlist = get_child(peers.size(), get_id(), prop.proposer);
+    if (sentSet.find(s) == sentSet.end()) {
+        if(sentSet.size()>10000) {
+            sentSet.clear();
+        }
+        sentSet.insert(s);
+        // relay msg to children
+        std::vector<int> childlist = get_child(peers.size(), get_id(), prop.proposer);
 
-    for (const auto& tid : childlist) {
-        send_propose(prop, tid);
+        for (const auto& tid : childlist) {
+            send_propose(prop, tid);
+        }
+        on_clock(0);
     }
-    on_clock(0);
 }
 
 void HotStuffBase::vote_handler(MsgVote &&msg, const Net::conn_t &conn) {
