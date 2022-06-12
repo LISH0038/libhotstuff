@@ -358,7 +358,7 @@ void HotStuffBase::on_clock(int) {
     delay = ((double) chunk_size) / max_rate;
 
     clock.del();
-    clock.add(0.005);
+    clock.add(0.01);
 }
 
 void HotStuffBase::send_propose(Proposal &prop, int tid)
