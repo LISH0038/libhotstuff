@@ -16,7 +16,7 @@ service="server-$KAURI_UUID"
 
 # Make sure correct branch is selected for crypto
 cd libhotstuff && git pull && git submodule update --recursive --remote
-git checkout new
+git checkout prototype
 
 # Do a quick compile of the branch
 git pull && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED=ON -DHOTSTUFF_PROTO_LOG=ON && make
