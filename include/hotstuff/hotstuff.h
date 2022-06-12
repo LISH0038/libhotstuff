@@ -181,7 +181,7 @@ class HotStuffBase: public HotStuffCore {
     std::vector<int> childlist;
     int backup_start = 0;
     size_t max_rate;
-    size_t chunk_size = 10240;
+    size_t chunk_size = 20480;
     int send_index = 0;
     Proposal curProp;
     std::unordered_map<std::string, std::unordered_set<PeerId>> ackSet;
